@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Bag — MairaJewels</title>
+    <meta name="description" content="Review your selected fine jewelry items, calculate shipping, and proceed to checkout at Maira Jewels.">
+    <link rel="icon" type="image/png" href="/MairaLogo.png">
+    <link rel="shortcut icon" type="image/png" href="/MairaLogo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/pages.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="page-header__inner">
+            <a href="/" class="page-header__logo">
+                <img src="/MairaLogo.png" alt="Maira Jewels Logo" class="page-header__logo-img">
+                <div class="page-header__logo-text-group">
+                    <span class="page-header__logo-text">MAIRA</span>
+                    <span class="page-header__logo-sub">JEWELS</span>
+                </div>
+            </a>
+            <nav class="page-header__nav">
+                <a href="/">Home</a>
+                <a href="/collections.html">Collections</a>
+                <a href="/contact.html#faq">FAQ</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/login.html">Log In</a>
+                <a href="/cart.html" class="page-header__cart" aria-label="Shopping Bag">
+                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="page-header__cart-count" id="cart-count-badge">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Title -->
+    <div class="page-title-strip">
+        <div class="container">
+            <h1>Your Bag</h1>
+            <p id="cart-item-count">0 items</p>
+        </div>
+    </div>
+
+    <!-- Cart Content -->
+    <main class="cart-page">
+        <div class="container">
+
+            <!-- Empty State -->
+            <div class="cart-empty" id="cart-empty" style="display:none;">
+                <div class="cart-empty__icon">◇</div>
+                <h2 class="cart-empty__title">Your bag is empty</h2>
+                <p class="cart-empty__text">Looks like you haven't added any pieces yet.</p>
+                <a href="/" class="btn btn--primary" style="width:auto; display:inline-flex;">Continue Shopping</a>
+            </div>
+
+            <!-- Cart Items + Summary -->
+            <div class="cart-layout" id="cart-layout">
+                <!-- Left: Items List -->
+                <div>
+                    <div class="cart-items__header">
+                        <span>Product</span>
+                        <span>Quantity</span>
+                        <span>Price</span>
+                        <span></span>
+                    </div>
+                    <div class="cart-items__list" id="cart-items-list">
+                        <!-- Injected by JS -->
+                    </div>
+                    <a href="/" style="display:inline-flex; align-items:center; gap:0.5rem; margin-top:2rem; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--color-muted); transition:color 0.3s ease;" onmouseover="this.style.color='var(--color-charcoal)'" onmouseout="this.style.color='var(--color-muted)'">
+                        ← Continue Shopping
+                    </a>
+                </div>
+
+                <!-- Right: Order Summary -->
+                <div class="order-summary">
+                    <h2 class="order-summary__title">Order Summary</h2>
+                    <div class="order-summary__row">
+                        <span>Subtotal</span>
+                        <span id="summary-subtotal">$0.00</span>
+                    </div>
+                    <div class="order-summary__row">
+                        <span>Shipping</span>
+                        <span class="order-summary__shipping-badge">Complimentary</span>
+                    </div>
+                    <div class="order-summary__row">
+                        <span>Taxes</span>
+                        <span id="summary-tax">$0.00</span>
+                    </div>
+                    <div class="order-summary__row order-summary__row--total">
+                        <span>Total</span>
+                        <span id="summary-total">$0.00</span>
+                    </div>
+                    <a href="/checkout.html" class="btn btn--primary" id="checkout-btn">Proceed to Checkout</a>
+                    <p style="text-align:center; font-size:0.7rem; color:var(--color-muted); margin-top:1.2rem; letter-spacing:0.05em;">
+                        Secure checkout · SSL Encrypted
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/src/js/cart.js"></script>
+</body>
+</html>

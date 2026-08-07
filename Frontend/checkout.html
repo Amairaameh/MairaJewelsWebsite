@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — MairaJewels</title>
+    <meta name="description" content="Secure checkout for Maira Jewels fine jewelry. Insured worldwide shipping and express delivery.">
+    <link rel="icon" type="image/png" href="/MairaLogo.png">
+    <link rel="shortcut icon" type="image/png" href="/MairaLogo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/pages.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="page-header__inner">
+            <a href="/" class="page-header__logo">
+                <img src="/MairaLogo.png" alt="Maira Jewels Logo" class="page-header__logo-img">
+                <div class="page-header__logo-text-group">
+                    <span class="page-header__logo-text">MAIRA</span>
+                    <span class="page-header__logo-sub">JEWELS</span>
+                </div>
+            </a>
+            <nav class="page-header__nav">
+                <a href="/">Home</a>
+                <a href="/contact.html#faq">FAQ</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/login.html">Log In</a>
+                <a href="/cart.html" class="page-header__cart" aria-label="Shopping Bag">
+                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="page-header__cart-count" id="cart-count-badge">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Title -->
+    <div class="page-title-strip">
+        <div class="container">
+            <h1>Checkout</h1>
+            <p>Secure & encrypted</p>
+        </div>
+    </div>
+
+    <!-- Checkout Content -->
+    <main class="checkout-page">
+        <div class="container">
+
+            <!-- Success State (hidden by default) -->
+            <div class="checkout-success" id="checkout-success">
+                <div class="checkout-success__icon">✦</div>
+                <h2 class="checkout-success__title">Order Confirmed</h2>
+                <p class="checkout-success__text">
+                    Thank you for your purchase. Your order has been received and is being prepared with the utmost care. A confirmation email will be sent to you shortly.
+                </p>
+                <a href="/" class="btn btn--primary" style="display:inline-flex; width:auto;">Continue Shopping</a>
+            </div>
+
+            <!-- Checkout Form -->
+            <div class="checkout-layout" id="checkout-layout">
+                <!-- Left: Form -->
+                <div class="checkout-form-section">
+                    <form id="checkout-form" novalidate>
+                        <h2>Contact Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="first-name">First Name</label>
+                                <input class="form-input" type="text" id="first-name" placeholder="Maira" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="last-name">Last Name</label>
+                                <input class="form-input" type="text" id="last-name" placeholder="Khan" required>
+                            </div>
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="email">Email Address</label>
+                                <input class="form-input" type="email" id="email" placeholder="mairajewels.za@gmail.com" required>
+                            </div>
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="phone">Phone Number</label>
+                                <input class="form-input" type="tel" id="phone" placeholder="083 922 8383">
+                            </div>
+
+                            <!-- Divider -->
+                            <p class="form-section-title">Shipping Address</p>
+
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="address">Street Address</label>
+                                <input class="form-input" type="text" id="address" placeholder="1 Sandton Drive" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="city">City</label>
+                                <input class="form-input" type="text" id="city" placeholder="Johannesburg" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="zip">Postal Code</label>
+                                <input class="form-input" type="text" id="zip" placeholder="2196" required>
+                            </div>
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="country">Country</label>
+                                <select class="form-select" id="country" required>
+                                    <option value="South Africa" selected>South Africa</option>
+                                    <option>United Arab Emirates</option>
+                                    <option>United Kingdom</option>
+                                    <option>United States</option>
+                                    <option>Australia</option>
+                                    <option>Canada</option>
+                                    <option>India</option>
+                                    <option>Germany</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+
+                            <!-- Divider -->
+                            <p class="form-section-title">Payment Details</p>
+
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="card-number">Card Number</label>
+                                <input class="form-input" type="text" id="card-number" placeholder="4242 4242 4242 4242" maxlength="19" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="expiry">Expiry Date</label>
+                                <input class="form-input" type="text" id="expiry" placeholder="MM / YY" maxlength="7" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="cvv">CVV</label>
+                                <input class="form-input" type="text" id="cvv" placeholder="123" maxlength="4" required>
+                            </div>
+                        </div>
+
+                        <div class="checkout-submit">
+                            <button type="submit" class="btn btn--primary" id="place-order-btn">Place Order</button>
+                            <p style="text-align:center; font-size:0.7rem; color:var(--color-muted); margin-top:1rem; letter-spacing:0.05em;">
+                                🔒 Your payment is secured with 256-bit SSL encryption
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Order Summary -->
+                <div class="checkout-summary">
+                    <h2 class="checkout-summary__title">Your Order</h2>
+                    <div id="checkout-items-list">
+                        <!-- Injected by JS -->
+                    </div>
+                    <div class="order-summary__row" style="margin-top: 1rem;">
+                        <span>Subtotal</span>
+                        <span id="checkout-subtotal">$0.00</span>
+                    </div>
+                    <div class="order-summary__row">
+                        <span>Shipping</span>
+                        <span class="order-summary__shipping-badge">Complimentary</span>
+                    </div>
+                    <div class="order-summary__row order-summary__row--total">
+                        <span>Total</span>
+                        <span id="checkout-total">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/src/js/checkout.js"></script>
+</body>
+</html>

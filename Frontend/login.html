@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In / Account — Maira Jewels</title>
+    <meta name="description" content="Access your Maira Jewels account, track orders, and experience fine jewelry concierge services.">
+    <link rel="icon" type="image/png" href="/MairaLogo.png">
+    <link rel="shortcut icon" type="image/png" href="/MairaLogo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/pages.css">
+</head>
+<body class="page-body">
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <p>Complimentary shipping & returns on all orders</p>
+    </div>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="page-header__inner">
+            <a href="/" class="page-header__logo">
+                <img src="/MairaLogo.png" alt="Maira Jewels Logo" class="page-header__logo-img">
+                <div class="page-header__logo-text-group">
+                    <span class="page-header__logo-text">MAIRA</span>
+                    <span class="page-header__logo-sub">JEWELS</span>
+                </div>
+            </a>
+            <nav class="page-header__nav">
+                <a href="/">Home</a>
+                <a href="/collections.html">Collections</a>
+                <a href="/contact.html#faq">FAQ</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/cart.html" class="page-header__cart" aria-label="Shopping Bag">
+                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="page-header__cart-count" id="cart-count-badge">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Auth Page Layout (Zara / Gucci Style) -->
+    <main class="login-page-section">
+        <div class="container">
+            <div class="login-page-grid">
+                
+                <!-- Left: Editorial Campaign Image -->
+                <div class="login-editorial-card">
+                    <img src="https://images.unsplash.com/photo-1599643478518-a784e5f4b940?auto=format&fit=crop&w=1000&q=80" alt="Maira Privé High Jewelry" class="login-editorial-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                    <div class="login-editorial-overlay">
+                        <span class="section-eyebrow section-eyebrow--light">Maira Privé Concierge</span>
+                        <h3>Affordable Luxury for Every Moment</h3>
+                        <p>Join our exclusive clientele for bespoke ring sizing, private vault previews, and personalized gold jewelry services.</p>
+                    </div>
+                </div>
+
+                <!-- Right: Minimalist Auth Form Container -->
+                <div class="login-form-card">
+                    <div class="login-header">
+                        <span class="section-eyebrow">Client Portal</span>
+                        <h1 class="login-title" id="page-auth-title">Welcome to Maira Jewels</h1>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="auth-tabs-row">
+                        <button type="button" class="auth-tab-btn auth-tab-btn--active" id="tab-login-btn">LOG IN</button>
+                        <button type="button" class="auth-tab-btn" id="tab-register-btn">CREATE ACCOUNT</button>
+                    </div>
+
+                    <!-- Log In Form -->
+                    <form id="page-login-form" class="page-auth-form page-auth-form--active" novalidate>
+                        <div class="form-group form-group--full">
+                            <label class="form-label" for="user-email">Email Address</label>
+                            <input class="form-input" type="email" id="user-email" placeholder="maira@example.com" required>
+                        </div>
+                        <div class="form-group form-group--full">
+                            <label class="form-label" for="user-password">Password</label>
+                            <input class="form-input" type="password" id="user-password" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="auth-options-row">
+                            <label class="auth-remember-check">
+                                <input type="checkbox" checked>
+                                <span>Remember session</span>
+                            </label>
+                            <a href="#" class="auth-forgot-pass">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn--full btn--primary">LOG IN TO MAIRA JEWELS</button>
+                    </form>
+
+                    <!-- Create Account Form -->
+                    <form id="page-register-form" class="page-auth-form" novalidate>
+                        <div class="form-group form-group--full">
+                            <label class="form-label" for="reg-user-name">Full Name</label>
+                            <input class="form-input" type="text" id="reg-user-name" placeholder="Maira Khan" required>
+                        </div>
+                        <div class="form-group form-group--full">
+                            <label class="form-label" for="reg-user-email">Email Address</label>
+                            <input class="form-input" type="email" id="reg-user-email" placeholder="maira@example.com" required>
+                        </div>
+                        <div class="form-group form-group--full">
+                            <label class="form-label" for="reg-user-password">Create Password</label>
+                            <input class="form-input" type="password" id="reg-user-password" placeholder="Minimum 6 characters" required>
+                        </div>
+
+                        <div class="auth-options-row">
+                            <label class="auth-remember-check">
+                                <input type="checkbox" checked>
+                                <span>Subscribe to Maira Privé Gazette</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn--full btn--primary">CREATE MY ACCOUNT</button>
+                    </form>
+
+                    <div class="login-footer-text">
+                        <p>Need assistance with an existing order? <a href="/contact.html">Contact Store Concierge</a></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="login-page-toast">Welcome Back ✓</div>
+
+    <script src="/src/js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Product — MairaJewels</title>
+    <meta name="description" content="View fine jewelry piece details, specifications, gold purity, and solitaire options. Handcrafted fine jewelry at Maira Jewels.">
+    <link rel="icon" type="image/png" href="/MairaLogo.png">
+    <link rel="shortcut icon" type="image/png" href="/MairaLogo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/pages.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="page-header__inner">
+            <a href="/" class="page-header__logo">
+                <img src="/MairaLogo.png" alt="Maira Jewels Logo" class="page-header__logo-img">
+                <div class="page-header__logo-text-group">
+                    <span class="page-header__logo-text">MAIRA</span>
+                    <span class="page-header__logo-sub">JEWELS</span>
+                </div>
+            </a>
+            <nav class="page-header__nav">
+                <a href="/">Home</a>
+                <a href="/collections.html">Collections</a>
+                <a href="/contact.html#faq">FAQ</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/login.html">Log In</a>
+                <a href="/cart.html" class="page-header__cart" id="cart-nav-link" aria-label="Shopping Bag">
+                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="page-header__cart-count" id="cart-count-badge">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Product Page -->
+    <main class="product-page">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="/">Home</a>
+                <span>/</span>
+                <a href="/#collections">Collections</a>
+                <span>/</span>
+                <span id="breadcrumb-name">Product</span>
+            </nav>
+
+            <!-- Product Layout -->
+            <div class="product-layout fade-in">
+                <!-- Left: Image Gallery -->
+                <div class="product-gallery">
+                    <div class="product-gallery__main">
+                        <button class="gallery-arrow gallery-arrow--prev" id="gallery-prev" aria-label="Previous image">‹</button>
+                        <img src="" alt="Product" id="main-image">
+                        <button class="gallery-arrow gallery-arrow--next" id="gallery-next" aria-label="Next image">›</button>
+                    </div>
+                    <div class="product-gallery__thumbs" id="gallery-thumbs">
+                        <!-- Thumbnails injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Product Info -->
+                <div class="product-info">
+                    <p class="product-info__category" id="product-category">Fine Jewelry</p>
+                    <h1 class="product-info__name" id="product-name">Loading...</h1>
+                    <p class="product-info__price" id="product-price">$0.00</p>
+                    <p class="product-info__tagline" id="product-tagline">
+                        Handcrafted with precision, this piece is designed to be your everyday signature — where modern minimalism meets timeless elegance.
+                    </p>
+
+                    <!-- Chips / Badges -->
+                    <div class="product-chips" id="product-chips">
+                        <!-- injected by JS -->
+                    </div>
+
+                    <!-- Quantity -->
+                    <div>
+                        <p class="product-qty__label">Quantity</p>
+                        <div class="product-qty">
+                            <button class="qty-btn" id="qty-minus" aria-label="Decrease quantity">−</button>
+                            <input class="qty-value" type="number" id="qty-value" value="1" min="1" max="10" readonly>
+                            <button class="qty-btn" id="qty-plus" aria-label="Increase quantity">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="product-actions">
+                        <button class="btn btn--primary" id="add-to-cart-btn">Add to Bag</button>
+                        <button class="btn btn--outline" id="buy-now-btn">Buy Now — Checkout</button>
+                    </div>
+
+                    <!-- Accordion -->
+                    <div class="product-accordion">
+                        <div class="accordion-item">
+                            <button class="accordion-item__trigger">
+                                <span>Product Details</span>
+                                <span class="accordion-item__icon">+</span>
+                            </button>
+                            <div class="accordion-item__body">
+                                <div class="accordion-item__content" id="product-details-text">
+                                    A masterpiece of modern craftsmanship. Every detail is carefully considered, from the ethically sourced materials to the hand-finished surface. Designed to be worn every day, passed down for generations.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-item__trigger">
+                                <span>Materials & Care</span>
+                                <span class="accordion-item__icon">+</span>
+                            </button>
+                            <div class="accordion-item__body">
+                                <div class="accordion-item__content">
+                                    18K Gold Plated over 316L Premium Stainless Steel. Completely tarnish-free, hypoallergenic, and waterproof. Clean gently with a soft cloth. Avoid prolonged exposure to chemicals and perfumes.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-item__trigger">
+                                <span>Shipping & Returns</span>
+                                <span class="accordion-item__icon">+</span>
+                            </button>
+                            <div class="accordion-item__body">
+                                <div class="accordion-item__content">
+                                    Complimentary insured shipping on all orders. Delivery in 3–5 business days. 30-day returns accepted for unworn items in original packaging. Custom and engraved pieces are final sale.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products Section (Zara Minimalist Style) -->
+            <section class="related-products">
+                <div class="related-products__header">
+                    <span class="related-products__eyebrow">Complete The Look</span>
+                    <h2 class="related-products__title">You May Also Like</h2>
+                </div>
+                <div class="related-grid" id="related-grid">
+                    <!-- Dynamically populated by product.js -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">Added to Bag ✓</div>
+
+    <script src="/src/js/product.js"></script>
+</body>
+</html>

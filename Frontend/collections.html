@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Collections & Fine Jewelry — Maira Jewels</title>
+    <meta name="description" content="Explore our entire collection of 18K Gold, Solitaires, Emeralds, and Bespoke Fine Jewelry. Filter by category, metal, price, and gemstone.">
+    <link rel="icon" type="image/png" href="/MairaLogo.png">
+    <link rel="shortcut icon" type="image/png" href="/MairaLogo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/pages.css">
+</head>
+<body class="page-body">
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <p>Complimentary insured shipping & signature luxury packaging on all collections</p>
+    </div>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="page-header__inner">
+            <a href="/" class="page-header__logo">
+                <img src="/MairaLogo.png" alt="Maira Jewels Logo" class="page-header__logo-img">
+                <div class="page-header__logo-text-group">
+                    <span class="page-header__logo-text">MAIRA</span>
+                    <span class="page-header__logo-sub">JEWELS</span>
+                </div>
+            </a>
+            <nav class="page-header__nav">
+                <a href="/">Home</a>
+                <a href="/collections.html" style="color: var(--color-gold);">Collections</a>
+                <a href="/contact.html#faq">FAQ</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/login.html">Log In</a>
+                <a href="/cart.html" class="page-header__cart" aria-label="Shopping Bag">
+                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="page-header__cart-count" id="cart-count-badge">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Collection Banner -->
+    <section class="collections-banner">
+        <div class="container text-center">
+            <span class="section-eyebrow">The Complete Catalog</span>
+            <h1 class="collections-banner__title">Fine Jewelry Collections</h1>
+            <p class="collections-banner__sub">Handcrafted 18K Plated & 316L Premium Steel pieces. Tarnish Free, Hypoallergenic, and Waterproof.</p>
+        </div>
+    </section>
+
+    <!-- Main Collections Section -->
+    <main class="collections-page container">
+
+        <!-- Category Pills Row -->
+        <div class="category-pills-bar">
+            <button class="cat-pill cat-pill--active" data-category="all">All Jewelry</button>
+            <button class="cat-pill" data-category="Rings">Rings</button>
+            <button class="cat-pill" data-category="Earrings">Earrings</button>
+            <button class="cat-pill" data-category="Necklaces">Necklaces</button>
+            <button class="cat-pill" data-category="Bracelets">Bracelets & Bangles</button>
+            <button class="cat-pill" data-category="Solitaire">Solitaires</button>
+        </div>
+
+        <!-- Filter & Grid Split -->
+        <div class="collections-layout">
+            
+            <!-- Left Sidebar Filters (Zara Style) -->
+            <aside class="collections-sidebar">
+                <div class="sidebar-block">
+                    <h4 class="sidebar-title">Metal & Purity</h4>
+                    <div class="filter-options">
+                        <label class="filter-check"><input type="checkbox" value="all-metals" class="filter-metal-check" checked> <span>All Metals</span></label>
+                        <label class="filter-check"><input type="checkbox" value="18K Gold" class="filter-metal-check"> <span>18K Yellow Gold</span></label>
+                        <label class="filter-check"><input type="checkbox" value="24K Gold" class="filter-metal-check"> <span>24K Pure Gold</span></label>
+                        <label class="filter-check"><input type="checkbox" value="Rose Gold" class="filter-metal-check"> <span>Rose Gold</span></label>
+                        <label class="filter-check"><input type="checkbox" value="Platinum" class="filter-metal-check"> <span>Platinum</span></label>
+                        <label class="filter-check"><input type="checkbox" value="White Gold" class="filter-metal-check"> <span>18K White Gold</span></label>
+                    </div>
+                </div>
+
+                <div class="sidebar-block">
+                    <h4 class="sidebar-title">Price Range</h4>
+                    <div class="filter-options">
+                        <label class="filter-radio"><input type="radio" name="price-range" value="all" checked> <span>Show All Prices</span></label>
+                        <label class="filter-radio"><input type="radio" name="price-range" value="under-500"> <span>Under $500</span></label>
+                        <label class="filter-radio"><input type="radio" name="price-range" value="500-2000"> <span>$500 – $2,000</span></label>
+                        <label class="filter-radio"><input type="radio" name="price-range" value="2000-5000"> <span>$2,000 – $5,000</span></label>
+                        <label class="filter-radio"><input type="radio" name="price-range" value="above-5000"> <span>Above $5,000</span></label>
+                    </div>
+                </div>
+
+                <div class="sidebar-block">
+                    <h4 class="sidebar-title">Primary Gemstone</h4>
+                    <div class="filter-options">
+                        <label class="filter-check"><input type="checkbox" value="Diamond" class="filter-gem-check" checked> <span>Certified Diamond</span></label>
+                        <label class="filter-check"><input type="checkbox" value="Emerald" class="filter-gem-check" checked> <span>Royal Emerald</span></label>
+                        <label class="filter-check"><input type="checkbox" value="Sapphire" class="filter-gem-check" checked> <span>Ceylon Sapphire</span></label>
+                        <label class="filter-check"><input type="checkbox" value="Ruby" class="filter-gem-check" checked> <span>Burmese Ruby</span></label>
+                        <label class="filter-check"><input type="checkbox" value="Pearl" class="filter-gem-check" checked> <span>South Sea Pearl</span></label>
+                    </div>
+                </div>
+
+                <button class="btn btn--small btn--outline" id="reset-filters-btn" style="width: 100%; margin-top: 1rem;">Reset Filters</button>
+            </aside>
+
+            <!-- Right Product Grid Area -->
+            <div class="collections-content">
+                
+                <!-- Toolbar Row -->
+                <div class="collections-toolbar">
+                    <div class="toolbar-count">
+                        <span id="results-count">Showing 12 items</span>
+                    </div>
+                    <div class="toolbar-sort">
+                        <label for="sort-select">Sort by:</label>
+                        <select id="sort-select" class="sort-dropdown">
+                            <option value="featured">Featured Collection</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="newest">Newest Arrivals</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Grid -->
+                <div class="product-grid collections-grid" id="catalog-grid">
+                    <!-- Loaded dynamically via collections.js -->
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter__inner">
+                <span class="section-eyebrow section-eyebrow--light">Stay Connected</span>
+                <h2 class="newsletter__title">Join the Maira Jewels Circle</h2>
+                <p class="newsletter__text">Be the first to discover new collections, exclusive events, and stories from our atelier.</p>
+                <form class="newsletter__form" id="newsletter-form">
+                    <input type="email" class="newsletter__input" placeholder="Enter your email address" required>
+                    <button type="submit" class="btn btn--primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__top">
+                <div class="footer__brand">
+                    <a href="/" class="logo footer__logo" style="margin-bottom: 1rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <img src="/MairaLogo.png" alt="Maira Jewels Logo" style="height: 60px; width: auto; object-fit: contain;">
+                        <div>
+                            <span class="logo-text">MAIRA</span>
+                            <span class="logo-sub">JEWELS</span>
+                        </div>
+                    </a>
+                    <p class="footer__tagline">Handcrafted fine jewelry for the modern connoisseur. Timeless elegance, ethically made in South Africa.</p>
+                </div>
+
+                <div class="footer__links">
+                    <div class="footer__col">
+                        <h4 class="footer__heading">Shop</h4>
+                        <ul>
+                            <li><a href="/collections.html">Rings</a></li>
+                            <li><a href="/collections.html">Necklaces</a></li>
+                            <li><a href="/collections.html">Earrings</a></li>
+                            <li><a href="/collections.html">Bracelets</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer__col">
+                        <h4 class="footer__heading">Company</h4>
+                        <ul>
+                            <li><a href="/#about">Our Story</a></li>
+                            <li><a href="/#about">Craftsmanship</a></li>
+                            <li><a href="/#journal">Journal</a></li>
+                            <li><a href="/contact.html">Boutique Store</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer__col">
+                        <h4 class="footer__heading">Support</h4>
+                        <ul>
+                            <li><a href="/contact.html">Contact Us</a></li>
+                            <li><a href="/contact.html#faq">Shipping & Returns</a></li>
+                            <li><a href="/contact.html#faq">Ring Sizing Guide</a></li>
+                            <li><a href="/contact.html#faq">Warranty & Care</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer__bottom">
+                <p class="footer__copyright">© 2026 Maira Jewels. All rights reserved.</p>
+                <div class="footer__social">
+                    <a href="#" aria-label="Instagram">Instagram</a>
+                    <a href="#" aria-label="Facebook">Facebook</a>
+                    <a href="#" aria-label="Pinterest">Pinterest</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="collections-toast">Added to Bag ✓</div>
+
+    <script src="/src/js/collections.js"></script>
+</body>
+</html>
