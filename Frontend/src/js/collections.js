@@ -1,5 +1,6 @@
 /* =============================================
    Maira Jewels — Collections Catalog Logic
+   Complete Dynamic Filtering & PDP Navigation
    ============================================= */
 
 (function () {
@@ -12,7 +13,7 @@
             category: 'Rings',
             price: '$2,450.00',
             priceNum: 2450,
-            metal: 'White Gold',
+            metal: '18K White Gold',
             gem: 'Diamond',
             specs: '18K White Gold · 1.5 Carat Diamond',
             badge: 'NEW',
@@ -197,6 +198,38 @@
                 'https://images.unsplash.com/photo-1535632741717-e47896068228?auto=format&fit=crop&w=800&q=80',
                 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'
             ]
+        },
+        {
+            id: 'item-13',
+            name: 'Golden Bangle Curve',
+            category: 'Bracelets',
+            price: '$2,850.00',
+            priceNum: 2850,
+            metal: '18K Gold',
+            gem: 'Diamond',
+            specs: '18K Yellow Gold · Diamond Accent Bangle',
+            badge: '',
+            image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1603564158650-9b23f9d0b14b?auto=format&fit=crop&w=800&q=80'
+            ]
+        },
+        {
+            id: 'item-14',
+            name: 'Diamond Tennis Bracelet',
+            category: 'Bracelets',
+            price: '$7,500.00',
+            priceNum: 7500,
+            metal: 'Platinum',
+            gem: 'Diamond',
+            specs: 'Platinum · 5.0 Carat Diamond Tennis Line',
+            badge: 'LUXURY',
+            image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'
+            ]
         }
     ];
 
@@ -226,6 +259,38 @@
     let activeCategory = 'all';
     let selectedPriceRange = 'all';
     let activeSort = 'featured';
+    let selectedMetals = [];
+    let selectedGems = [];
+
+    // Parse URL Search Parameters for initial filter state
+    function initFiltersFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cat = urlParams.get('category') || urlParams.get('cat');
+        const metal = urlParams.get('metal');
+        const gem = urlParams.get('gem');
+
+        if (cat) {
+            activeCategory = cat;
+            // Activate corresponding category pill
+            const pills = document.querySelectorAll('.cat-pill');
+            pills.forEach(pill => {
+                const pCat = pill.getAttribute('data-category');
+                if (pCat && pCat.toLowerCase() === cat.toLowerCase()) {
+                    pill.classList.add('cat-pill--active');
+                } else if (pCat !== 'all') {
+                    pill.classList.remove('cat-pill--active');
+                }
+            });
+        }
+
+        if (metal) {
+            selectedMetals = [metal];
+        }
+
+        if (gem) {
+            selectedGems = [gem];
+        }
+    }
 
     function renderCatalog() {
         const grid = document.getElementById('catalog-grid');
@@ -234,12 +299,31 @@
 
         let filtered = catalogItems.filter(item => {
             // Category filter
-            if (activeCategory !== 'all') {
-                if (activeCategory === 'Solitaire') {
-                    if (!item.name.includes('Solitaire') && item.gem !== 'Diamond') return false;
-                } else if (item.category !== activeCategory) {
+            if (activeCategory && activeCategory !== 'all') {
+                const catLower = activeCategory.toLowerCase();
+                if (catLower === 'solitaire' || catLower === 'solitaires') {
+                    if (!item.name.toLowerCase().includes('solitaire') && item.gem.toLowerCase() !== 'diamond') return false;
+                } else if (item.category.toLowerCase() !== catLower && !item.name.toLowerCase().includes(catLower)) {
                     return false;
                 }
+            }
+
+            // Metal filter
+            if (selectedMetals.length > 0 && !selectedMetals.includes('all-metals')) {
+                const itemMetal = (item.metal || '').toLowerCase();
+                const itemSpecs = (item.specs || '').toLowerCase();
+                const metalMatch = selectedMetals.some(m => {
+                    const mLower = m.toLowerCase();
+                    return itemMetal.includes(mLower) || itemSpecs.includes(mLower) || (mLower === 'gold' && (itemMetal.includes('gold') || itemSpecs.includes('gold')));
+                });
+                if (!metalMatch) return false;
+            }
+
+            // Gem filter
+            if (selectedGems.length > 0) {
+                const itemGem = (item.gem || '').toLowerCase();
+                const gemMatch = selectedGems.some(g => itemGem.includes(g.toLowerCase()));
+                if (!gemMatch) return false;
             }
 
             // Price filter
@@ -265,7 +349,18 @@
         }
 
         if (filtered.length === 0) {
-            grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 4rem 0; text-align: center; color: var(--color-muted);">No fine jewelry pieces match your filter criteria.</div>`;
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; padding: 4rem 1rem; text-align: center; background: var(--color-white); border: 1px solid var(--color-border);">
+                    <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 0.8rem; color: var(--color-charcoal);">No Fine Jewelry Pieces Found</h3>
+                    <p style="color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2rem;">No items match your current filter selections. Try clearing your filters to explore our complete collection.</p>
+                    <button class="btn btn--primary" id="clear-all-filters-btn" style="min-height: 44px; padding: 0.8rem 2rem;">Clear All Filters</button>
+                </div>
+            `;
+
+            const clearBtn = document.getElementById('clear-all-filters-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', resetAllFilters);
+            }
             return;
         }
 
@@ -301,7 +396,7 @@
                     image: item.image,
                     thumbs: item.thumbs
                 }));
-                window.location.href = '/product.html';
+                window.location.href = 'product.html';
             });
 
             // Add to cart click
@@ -332,6 +427,32 @@
         });
     }
 
+    function resetAllFilters() {
+        activeCategory = 'all';
+        selectedPriceRange = 'all';
+        activeSort = 'featured';
+        selectedMetals = [];
+        selectedGems = [];
+
+        const pills = document.querySelectorAll('.cat-pill');
+        pills.forEach(p => p.classList.remove('cat-pill--active'));
+        if (pills[0]) pills[0].classList.add('cat-pill--active');
+
+        const metalChecks = document.querySelectorAll('.filter-metal-check');
+        metalChecks.forEach(chk => chk.checked = chk.value === 'all-metals');
+
+        const gemChecks = document.querySelectorAll('.filter-gem-check');
+        gemChecks.forEach(chk => chk.checked = true);
+
+        const defaultRadio = document.querySelector('input[name="price-range"][value="all"]');
+        if (defaultRadio) defaultRadio.checked = true;
+
+        const sortSelect = document.getElementById('sort-select');
+        if (sortSelect) sortSelect.value = 'featured';
+
+        renderCatalog();
+    }
+
     function updateCartBadge() {
         const badge = document.getElementById('cart-count-badge');
         if (badge) {
@@ -342,6 +463,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        initFiltersFromURL();
         updateCartBadge();
         renderCatalog();
 
@@ -352,6 +474,28 @@
                 pills.forEach(p => p.classList.remove('cat-pill--active'));
                 pill.classList.add('cat-pill--active');
                 activeCategory = pill.getAttribute('data-category');
+                renderCatalog();
+            });
+        });
+
+        // Sidebar Metal Checkboxes
+        const metalChecks = document.querySelectorAll('.filter-metal-check');
+        metalChecks.forEach(check => {
+            check.addEventListener('change', () => {
+                selectedMetals = Array.from(metalChecks)
+                    .filter(c => c.checked)
+                    .map(c => c.value);
+                renderCatalog();
+            });
+        });
+
+        // Sidebar Gem Checkboxes
+        const gemChecks = document.querySelectorAll('.filter-gem-check');
+        gemChecks.forEach(check => {
+            check.addEventListener('change', () => {
+                selectedGems = Array.from(gemChecks)
+                    .filter(c => c.checked)
+                    .map(c => c.value);
                 renderCatalog();
             });
         });
@@ -374,24 +518,10 @@
             });
         }
 
-        // Reset Filters
+        // Reset Filters Button
         const resetBtn = document.getElementById('reset-filters-btn');
         if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                activeCategory = 'all';
-                selectedPriceRange = 'all';
-                activeSort = 'featured';
-
-                pills.forEach(p => p.classList.remove('cat-pill--active'));
-                if (pills[0]) pills[0].classList.add('cat-pill--active');
-
-                const defaultRadio = document.querySelector('input[name="price-range"][value="all"]');
-                if (defaultRadio) defaultRadio.checked = true;
-
-                if (sortSelect) sortSelect.value = 'featured';
-
-                renderCatalog();
-            });
+            resetBtn.addEventListener('click', resetAllFilters);
         }
     });
 })();

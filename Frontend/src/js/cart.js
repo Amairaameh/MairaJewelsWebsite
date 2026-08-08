@@ -135,4 +135,18 @@
     }
 
     renderCart();
+
+    // Checkout Navigation Listener
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert('Your shopping bag is empty! Please add items before checking out.');
+                return;
+            }
+            window.location.href = 'checkout.html';
+        });
+    }
 })();

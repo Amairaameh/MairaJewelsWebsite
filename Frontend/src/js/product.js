@@ -223,7 +223,7 @@
             }
 
             saveCart(cart);
-            window.location.href = '/checkout.html';
+            window.location.href = 'checkout.html';
         });
     }
 

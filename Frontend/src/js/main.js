@@ -84,7 +84,7 @@
     updateCartBadge();
 
     if (cartLink) {
-        cartLink.setAttribute('href', '/cart.html');
+        cartLink.setAttribute('href', 'cart.html');
     }
 
     /* ---------- Add to Cart Buttons on Cards ---------- */
@@ -139,7 +139,7 @@
         card.style.cursor = 'pointer';
         
         card.addEventListener('click', function (e) {
-            if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) return;
+            if (e.target.closest('button, .add-to-cart, .add-to-cart-btn, a')) return;
 
             const titleEl = card.querySelector('.diamond-card__title, .product-card__name');
             const priceEl = card.querySelector('.diamond-card__price, .product-card__price');
@@ -160,8 +160,10 @@
                     ]
                 };
 
-                localStorage.setItem('maira_selected_product', JSON.stringify(selectedProduct));
-                window.location.href = '/product.html';
+                try {
+                    localStorage.setItem('maira_selected_product', JSON.stringify(selectedProduct));
+                } catch (err) {}
+                window.location.href = 'product.html';
             }
         });
     });
