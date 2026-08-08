@@ -230,6 +230,70 @@
                 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
                 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'
             ]
+        },
+        {
+            id: 'item-15',
+            name: 'Royal Gold Diamond Watch',
+            category: 'Watches',
+            price: '$3,850.00',
+            priceNum: 3850,
+            metal: '18K Gold',
+            gem: 'Diamond',
+            specs: '18K Gold · Diamond Bezel Automatic',
+            badge: 'NEW',
+            image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80'
+            ]
+        },
+        {
+            id: 'item-16',
+            name: "Women's Diamond Petite Watch",
+            category: 'Watches',
+            price: '$2,950.00',
+            priceNum: 2950,
+            metal: 'Rose Gold',
+            gem: 'Diamond',
+            specs: 'Rose Gold · Diamond Bezel & Leather',
+            badge: 'BESTSELLER',
+            image: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80'
+            ]
+        },
+        {
+            id: 'item-17',
+            name: "Men's Diamond Signet Ring",
+            category: "Men's Accessories",
+            price: '$2,450.00',
+            priceNum: 2450,
+            metal: '24K Gold',
+            gem: 'Diamond',
+            specs: '24K Pure Gold · Diamond Solitaire Inlay',
+            badge: 'BESTSELLER',
+            image: 'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'
+            ]
+        },
+        {
+            id: 'item-18',
+            name: 'Heritage Diamond Cufflinks',
+            category: "Men's Accessories",
+            price: '$1,680.00',
+            priceNum: 1680,
+            metal: 'White Gold',
+            gem: 'Diamond',
+            specs: '18K White Gold · 12.8gm Diamond',
+            badge: 'NEW',
+            image: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'
+            ]
         }
     ];
 

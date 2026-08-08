@@ -301,6 +301,28 @@
                 'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?auto=format&fit=crop&w=800&q=80',
                 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'
             ]
+        },
+        {
+            name: 'Royal Gold Diamond Watch',
+            price: '$3,850.00',
+            category: 'Watches',
+            specs: '18K Gold • Automatic',
+            image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80'
+            ]
+        },
+        {
+            name: "Men's Diamond Signet Ring",
+            price: '$2,450.00',
+            category: "Men's Accessories",
+            specs: '24K Gold • 18.5gm',
+            image: 'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&w=800&q=80',
+            thumbs: [
+                'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'
+            ]
         }
     ];
 
