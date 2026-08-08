@@ -419,8 +419,7 @@ img {
     }
 
     .hero__image {
-        height: 50vh;
-        order: 2;
+        display: none !important;
     }
 
     .hero__content {
@@ -486,13 +485,13 @@ img {
     }
 
     .hero__image {
-        height: 45vh;
+        display: none !important;
     }
 }
 
 @media (max-width: 480px) {
     .hero__image {
-        height: 38vh;
+        display: none !important;
     }
 
     .hero__content {

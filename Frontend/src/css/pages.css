@@ -71,12 +71,13 @@ input, select, textarea { font-family: var(--font-sans); }
 
 /* ---------- Page Header (Reused on all pages) ---------- */
 .page-header {
-    background-color: var(--color-charcoal);
+    background-color: var(--color-cream);
     padding: 0.8rem 2.5rem;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .page-header__inner {
@@ -115,7 +116,7 @@ input, select, textarea { font-family: var(--font-sans); }
     font-size: 1.45rem;
     font-weight: 600;
     letter-spacing: 0.25em;
-    color: var(--color-cream);
+    color: var(--color-gold);
     line-height: 1;
 }
 
@@ -140,26 +141,26 @@ input, select, textarea { font-family: var(--font-sans); }
     letter-spacing: 0.15em;
     text-transform: uppercase;
     font-weight: 400;
-    color: rgba(250, 247, 242, 0.85);
+    color: var(--color-charcoal);
     transition: color var(--transition);
 }
 
 .page-header__nav a:hover {
-    color: var(--color-gold);
+    color: var(--color-gold-dark);
 }
 
 .page-header__cart {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--color-cream) !important;
+    color: var(--color-charcoal) !important;
     padding: 0.2rem 0;
 }
 
 .page-header__bag-icon {
     width: 22px;
     height: 22px;
-    stroke: var(--color-cream);
+    stroke: var(--color-charcoal);
     fill: none;
     transition: stroke var(--transition), transform 0.3s var(--ease);
 }

@@ -163,7 +163,7 @@
                 try {
                     localStorage.setItem('maira_selected_product', JSON.stringify(selectedProduct));
                 } catch (err) {}
-                window.location.href = 'product.html';
+                window.location.href = `product.html?name=${encodeURIComponent(selectedProduct.name)}&price=${encodeURIComponent(selectedProduct.price)}&image=${encodeURIComponent(selectedProduct.image)}&specs=${encodeURIComponent(selectedProduct.specs)}`;
             }
         });
     });

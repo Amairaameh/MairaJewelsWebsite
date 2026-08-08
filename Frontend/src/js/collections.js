@@ -396,7 +396,7 @@
                     image: item.image,
                     thumbs: item.thumbs
                 }));
-                window.location.href = 'product.html';
+                window.location.href = `product.html?name=${encodeURIComponent(item.name)}&price=${encodeURIComponent(item.price)}&image=${encodeURIComponent(item.image)}&specs=${encodeURIComponent(item.specs || '')}`;
             });
 
             // Add to cart click

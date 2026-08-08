@@ -37,9 +37,26 @@
     // Load Product Data
     let productData = null;
     try {
-        const stored = localStorage.getItem('maira_selected_product');
-        if (stored) {
-            productData = JSON.parse(stored);
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlName = urlParams.get('name');
+        if (urlName) {
+            productData = {
+                name: urlName,
+                price: urlParams.get('price') || '$448.00',
+                image: urlParams.get('image') || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+                specs: urlParams.get('specs') || '18K Gold',
+                category: urlParams.get('category') || 'Fine Jewelry',
+                thumbs: [
+                    urlParams.get('image') || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+                    'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80',
+                    'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80'
+                ]
+            };
+        } else {
+            const stored = localStorage.getItem('maira_selected_product');
+            if (stored) {
+                productData = JSON.parse(stored);
+            }
         }
     } catch (e) {
         console.error('Error loading product data', e);
