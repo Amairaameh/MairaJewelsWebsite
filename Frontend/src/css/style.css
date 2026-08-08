@@ -1809,33 +1809,207 @@ img {
     .container {
         padding: 0 1.5rem;
     }
-    
+
+    /* Header Nav Layout */
+    .header {
+        top: 2rem;
+    }
+
     .nav {
-        grid-template-columns: auto 1fr auto;
-        gap: 1rem;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
+
+    .nav-left {
+        gap: 0.5rem;
+    }
+
+    .nav-left .nav-logo {
+        display: none;
     }
 
     .nav-links--left,
     .nav-links--right li:not(:last-child):not(:nth-last-child(2)) {
+        display: none !important;
+    }
+
+    .nav-links--right {
+        gap: 1.25rem !important;
+    }
+
+    .nav-account-btn #nav-login-text {
         display: none;
     }
 
     .mobile-nav-toggle {
-        display: flex;
+        display: flex !important;
     }
 
     .page-header__nav a:not(.page-header__cart) {
-        display: none;
+        display: none !important;
     }
 
     .page-header__inner {
-        justify-content: space-between;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
     }
 
+    /* Hero Section */
+    .hero {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: auto !important;
+        width: 100% !important;
+    }
+
+    .hero__content {
+        width: 100% !important;
+        padding: 5.5rem 1.5rem 2.5rem !important;
+        order: 1;
+    }
+
+    .hero__title {
+        font-size: clamp(2.2rem, 7vw, 3.5rem);
+        margin-bottom: 1.2rem;
+    }
+
+    .hero__text {
+        font-size: 0.95rem;
+        line-height: 1.65;
+        margin-bottom: 2rem;
+        max-width: 100%;
+    }
+
+    .hero__actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 2.5rem;
+        width: 100%;
+    }
+
+    .hero__actions .btn {
+        width: 100%;
+        text-align: center;
+        min-height: 48px;
+    }
+
+    .hero__meta {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        padding-top: 1.8rem;
+        text-align: center;
+    }
+
+    .hero__meta-item {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .hero__meta-value {
+        font-size: 1.5rem;
+    }
+
+    .hero__meta-label {
+        font-size: 0.6rem;
+        letter-spacing: 0.08em;
+    }
+
+    .hero__image {
+        width: 100% !important;
+        height: 350px !important;
+        order: 2;
+    }
+
+    .hero__image img {
+        padding: 1rem !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+    }
+
+    /* Diamond & Gold Sections */
+    .diamond-items__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .diamond-title {
+        font-size: 2.2rem;
+    }
+
+    .filter-pills {
+        display: flex;
+        gap: 0.6rem;
+        overflow-x: auto;
+        padding-bottom: 0.75rem;
+        margin-bottom: 2rem;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .filter-pills::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-pill {
+        flex-shrink: 0;
+        padding: 0.45rem 1.1rem;
+        font-size: 0.78rem;
+    }
+
+    .diamond-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem 1rem;
+        padding: 0;
+    }
+
+    /* Diamond Brilliance */
+    .brilliance-split {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+
+    .brilliance-title {
+        font-size: 2.4rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .brilliance-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 1.25rem 0;
+    }
+
+    /* About Section */
+    .about {
+        grid-template-columns: 1fr;
+    }
+
+    .about__content {
+        padding: 3rem 1.25rem;
+    }
+
+    .about__features {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+        margin: 1.5rem 0;
+        padding: 1.5rem 0;
+    }
+
+    /* Grid Sections */
+    .product-grid,
     .categories-grid,
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+        gap: 1.25rem;
     }
 
     .craftsmanship-grid {
@@ -1843,9 +2017,10 @@ img {
         gap: 2rem;
     }
 
+    .journal__grid,
     .journal-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+        gap: 1.25rem;
     }
 
     .footer-grid {
@@ -1865,28 +2040,63 @@ img {
         padding: 0.5rem 0.75rem;
     }
 
-    .header {
-        top: 2rem;
-    }
-
     .logo-text {
-        font-size: 1.4rem;
+        font-size: 1.35rem;
+        letter-spacing: 0.2em;
     }
 
     .page-header__logo-text {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
     }
 
-    .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+    .diamond-title {
+        font-size: 1.8rem;
     }
 
+    .btn-pill {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.75rem;
+    }
+
+    .product-grid,
+    .categories-grid,
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
 
+    .product-card__body {
+        padding: 0.85rem;
+    }
+
+    .product-card__name {
+        font-size: 1.1rem;
+    }
+
+    .product-card__price {
+        font-size: 1.05rem;
+    }
+
+    .product-card__footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .product-card__footer .btn {
+        width: 100% !important;
+        padding: 0.5rem 0.6rem !important;
+        font-size: 0.65rem !important;
+        letter-spacing: 0.12em !important;
+        min-height: 36px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+
+    .journal__grid,
     .journal-grid {
         grid-template-columns: 1fr;
     }
@@ -1927,11 +2137,11 @@ img {
         height: 90vh;
         overflow-y: auto;
     }
-    
+
     .product-modal__image-wrapper {
         height: 40vh;
     }
-    
+
     .product-modal__details {
         padding: 2rem 1.5rem;
         height: auto;
@@ -1943,13 +2153,44 @@ img {
         padding: 0 1rem;
     }
 
-    .products-grid {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
+    .hero__content {
+        padding: 5rem 1rem 2rem !important;
     }
 
+    .hero__image {
+        height: 280px !important;
+    }
+
+    .hero__meta-value {
+        font-size: 1.35rem;
+    }
+
+    .hero__meta-label {
+        font-size: 0.55rem;
+    }
+
+    .diamond-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .diamond-card__title {
+        font-size: 1.05rem;
+    }
+
+    .diamond-card__price {
+        font-size: 1.1rem;
+    }
+
+    .diamond-card__specs {
+        font-size: 0.65rem;
+    }
+
+    .product-grid,
+    .products-grid,
     .categories-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
 
     .section-title {
@@ -1958,5 +2199,13 @@ img {
 
     .logo-text {
         font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .diamond-grid,
+    .product-grid,
+    .products-grid {
+        grid-template-columns: 1fr;
     }
 }
