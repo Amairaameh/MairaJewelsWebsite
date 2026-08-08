@@ -21,6 +21,12 @@
     <!-- Header / Navigation -->
     <header class="header" id="header">
         <nav class="nav container">
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
             <div class="nav-left">
                 <img src="/MairaLogo.png" alt="Maira Logo" class="nav-logo">
                 <ul class="nav-links nav-links--left">
@@ -30,7 +36,7 @@
                 </ul>
             </div>
 
-            <a href="#" class="logo">
+            <a href="/" class="logo">
                 <span class="logo-text">MAIRA</span>
                 <span class="logo-sub">JEWELS</span>
             </a>
@@ -60,6 +66,43 @@
             </ul>
         </nav>
     </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer" aria-label="Mobile Navigation Menu">
+        <div class="mobile-drawer__header">
+            <a href="/" class="mobile-drawer__logo">
+                <span class="logo-text">MAIRA</span>
+                <span class="logo-sub">JEWELS</span>
+            </a>
+            <button class="mobile-drawer__close" id="mobileDrawerClose" aria-label="Close Navigation Menu">&times;</button>
+        </div>
+        <ul class="mobile-drawer__links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/collections.html">Collections</a></li>
+            <li><a href="/index.html#about">About Us</a></li>
+            <li><a href="/index.html#journal">Journal</a></li>
+            <li><a href="/contact.html#faq">FAQ</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+        </ul>
+        <div class="mobile-drawer__footer">
+            <a href="/login.html" class="mobile-drawer__btn" id="mobile-login-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span id="mobile-login-text">LOG IN</span>
+            </a>
+            <a href="/cart.html" class="mobile-drawer__btn mobile-drawer__btn--gold">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                VIEW BAG (<span class="mobile-cart-count">0</span>)
+            </a>
+        </div>
+    </aside>
 
     <!-- Hero Section -->
     <section class="hero">

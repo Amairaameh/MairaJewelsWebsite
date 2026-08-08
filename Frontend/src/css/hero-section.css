@@ -419,97 +419,102 @@ img {
     }
 
     .hero__image {
-        height: 60vh;
+        height: 50vh;
         order: 2;
     }
 
     .hero__content {
         order: 1;
-        padding: 5rem 2.5rem 4rem;
+        padding: 7rem 2.5rem 3.5rem;
     }
 
     .hero__content::before {
         left: 2.5rem;
-        top: 4rem;
+        top: 5.5rem;
     }
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 0 1.5rem;
-    }
-
-    .nav {
-        grid-template-columns: auto 1fr auto;
-        gap: 1rem;
-    }
-
-    .nav-links {
-        gap: 1.2rem;
-    }
-
-    .nav-links--left li:nth-child(n+3),
-    .nav-links--right li:nth-child(-n+2) {
-        display: none;
-    }
-
-    .nav-links a {
-        font-size: 0.7rem;
-    }
-
-    .logo-text {
-        font-size: 1.4rem;
-    }
-
     .hero__content {
-        padding: 4rem 1.5rem 3rem;
+        padding: 6.5rem 1.5rem 3rem;
     }
 
     .hero__content::before {
         left: 1.5rem;
-        top: 3rem;
+        top: 5rem;
+    }
+
+    .hero__title {
+        font-size: clamp(2.2rem, 8vw, 3.5rem);
+        margin-bottom: 1.2rem;
+    }
+
+    .hero__text {
+        font-size: 0.92rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
     }
 
     .hero__actions {
         flex-direction: column;
         align-items: stretch;
         gap: 0.8rem;
+        margin-bottom: 2.5rem;
     }
 
     .btn {
         padding: 0.9rem 1.5rem;
         text-align: center;
+        width: 100%;
+        min-height: 44px;
     }
 
     .hero__meta {
         gap: 1.5rem;
-        flex-wrap: wrap;
+        padding-top: 1.8rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        text-align: center;
     }
 
     .hero__meta-value {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
+    }
+
+    .hero__meta-label {
+        font-size: 0.6rem;
+    }
+
+    .hero__image {
+        height: 45vh;
     }
 }
 
 @media (max-width: 480px) {
-    .announcement-bar {
-        font-size: 0.6rem;
-        letter-spacing: 0.15em;
-    }
-
-    .nav-links--left {
-        display: none;
-    }
-
-    .nav {
-        grid-template-columns: 1fr auto;
-    }
-
     .hero__image {
-        height: 50vh;
+        height: 38vh;
+    }
+
+    .hero__content {
+        padding: 5.5rem 1rem 2.5rem;
+    }
+
+    .hero__content::before {
+        left: 1rem;
+        top: 4.2rem;
     }
 
     .hero__meta {
-        gap: 1.2rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    .hero__meta-value {
+        font-size: 1.35rem;
+    }
+
+    .hero__meta-label {
+        font-size: 0.55rem;
+        letter-spacing: 0.08em;
     }
 }

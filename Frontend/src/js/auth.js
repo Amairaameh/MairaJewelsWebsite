@@ -94,6 +94,14 @@
     function updateUserNav() {
         const user = getUser();
         const accountBtns = document.querySelectorAll('.nav-account-btn, #login-trigger, #login-nav-btn');
+        const navLoginText = document.getElementById('nav-login-text');
+        const mobileLoginText = document.getElementById('mobile-login-text');
+
+        const labelText = (user && user.name) ? user.name.split(' ')[0].toUpperCase() : 'LOG IN';
+
+        if (navLoginText) navLoginText.textContent = labelText;
+        if (mobileLoginText) mobileLoginText.textContent = labelText;
+
         accountBtns.forEach(btn => {
             if (user && user.name) {
                 const firstName = user.name.split(' ')[0];

@@ -23,6 +23,12 @@
     <!-- Page Header -->
     <header class="page-header">
         <div class="page-header__inner">
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
             <a href="/" class="page-header__logo">
                 <img src="/MairaLogo.png" alt="Maira Jewels Logo" class="page-header__logo-img">
                 <div class="page-header__logo-text-group">
@@ -35,18 +41,55 @@
                 <a href="/collections.html" style="color: var(--color-gold);">Collections</a>
                 <a href="/contact.html#faq">FAQ</a>
                 <a href="/contact.html">Contact</a>
-                <a href="/login.html">Log In</a>
-                <a href="/cart.html" class="page-header__cart" aria-label="Shopping Bag">
+                <a href="/login.html" id="nav-login-text">Log In</a>
+                <a href="/cart.html" class="page-header__cart cart-link" aria-label="Shopping Bag">
                     <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 0 1-8 0"></path>
                     </svg>
-                    <span class="page-header__cart-count" id="cart-count-badge">0</span>
+                    <span class="page-header__cart-count cart-count" id="cart-count-badge">0</span>
                 </a>
             </nav>
         </div>
     </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer" aria-label="Mobile Navigation Menu">
+        <div class="mobile-drawer__header">
+            <a href="/" class="mobile-drawer__logo">
+                <span class="logo-text">MAIRA</span>
+                <span class="logo-sub">JEWELS</span>
+            </a>
+            <button class="mobile-drawer__close" id="mobileDrawerClose" aria-label="Close Navigation Menu">&times;</button>
+        </div>
+        <ul class="mobile-drawer__links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/collections.html">Collections</a></li>
+            <li><a href="/index.html#about">About Us</a></li>
+            <li><a href="/index.html#journal">Journal</a></li>
+            <li><a href="/contact.html#faq">FAQ</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+        </ul>
+        <div class="mobile-drawer__footer">
+            <a href="/login.html" class="mobile-drawer__btn" id="mobile-login-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span id="mobile-login-text">LOG IN</span>
+            </a>
+            <a href="/cart.html" class="mobile-drawer__btn mobile-drawer__btn--gold">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                VIEW BAG (<span class="mobile-cart-count">0</span>)
+            </a>
+        </div>
+    </aside>
 
     <!-- Collection Banner -->
     <section class="collections-banner">
@@ -68,6 +111,16 @@
             <button class="cat-pill" data-category="Necklaces">Necklaces</button>
             <button class="cat-pill" data-category="Bracelets">Bracelets & Bangles</button>
             <button class="cat-pill" data-category="Solitaire">Solitaires</button>
+        </div>
+
+        <!-- Mobile Filter Action Bar -->
+        <div class="mobile-filter-bar">
+            <button class="mobile-filter-toggle-btn" id="mobileFilterToggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                <span>Filter & Refine</span>
+            </button>
         </div>
 
         <!-- Filter & Grid Split -->
