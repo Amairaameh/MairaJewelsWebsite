@@ -415,7 +415,7 @@
         if (filtered.length === 0) {
             grid.innerHTML = `
                 <div style="grid-column: 1 / -1; padding: 4rem 1rem; text-align: center; background: var(--color-white); border: 1px solid var(--color-border);">
-                    <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 0.8rem; color: var(--color-charcoal);">No Fine Jewelry Pieces Found</h3>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 0.8rem; color: var(--color-charcoal);">No Fine Jewellery Pieces Found</h3>
                     <p style="color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2rem;">No items match your current filter selections. Try clearing your filters to explore our complete collection.</p>
                     <button class="btn btn--primary" id="clear-all-filters-btn" style="min-height: 44px; padding: 0.8rem 2rem;">Clear All Filters</button>
                 </div>

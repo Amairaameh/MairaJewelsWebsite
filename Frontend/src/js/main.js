@@ -62,7 +62,7 @@
             if (user && user.name && navLoginText) {
                 navLoginText.textContent = user.name.split(' ')[0].toUpperCase();
             }
-        } catch (e) {}
+        } catch (e) { }
     }
     updateUserState();
 
@@ -101,7 +101,7 @@
                 const specsEl = card.querySelector('.diamond-card__specs, .product-card__type');
 
                 const productObj = {
-                    name: titleEl ? titleEl.textContent.trim() : 'Fine Jewelry Piece',
+                    name: titleEl ? titleEl.textContent.trim() : 'Fine Jewellery Piece',
                     price: priceEl ? priceEl.textContent.trim() : '$0.00',
                     image: imgEl ? imgEl.src : '',
                     specs: specsEl ? specsEl.textContent.trim() : '18K Gold',
@@ -137,7 +137,7 @@
 
     allProductCards.forEach(card => {
         card.style.cursor = 'pointer';
-        
+
         card.addEventListener('click', function (e) {
             if (e.target.closest('button, .add-to-cart, .add-to-cart-btn, a')) return;
 
@@ -162,7 +162,7 @@
 
                 try {
                     localStorage.setItem('maira_selected_product', JSON.stringify(selectedProduct));
-                } catch (err) {}
+                } catch (err) { }
                 window.location.href = `product.html?name=${encodeURIComponent(selectedProduct.name)}&price=${encodeURIComponent(selectedProduct.price)}&image=${encodeURIComponent(selectedProduct.image)}&specs=${encodeURIComponent(selectedProduct.specs)}`;
             }
         });

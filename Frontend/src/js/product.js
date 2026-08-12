@@ -45,7 +45,7 @@
                 price: urlParams.get('price') || '$448.00',
                 image: urlParams.get('image') || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
                 specs: urlParams.get('specs') || '18K Gold',
-                category: urlParams.get('category') || 'Fine Jewelry',
+                category: urlParams.get('category') || 'Fine Jewellery',
                 thumbs: [
                     urlParams.get('image') || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
                     'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80',
@@ -85,7 +85,7 @@
 
     // Populate Page Elements
     document.title = `${productData.name} — MairaJewels`;
-    
+
     const breadcrumbName = document.getElementById('breadcrumb-name');
     const pageTitle = document.getElementById('page-title');
     const mainImage = document.getElementById('main-image');
@@ -97,14 +97,14 @@
 
     if (breadcrumbName) breadcrumbName.textContent = productData.name;
     if (pageTitle) pageTitle.textContent = `${productData.name} — MairaJewels`;
-    if (productCategory) productCategory.textContent = productData.category || 'Fine Jewelry';
+    if (productCategory) productCategory.textContent = productData.category || 'Fine Jewellery';
     if (productName) productName.textContent = productData.name;
     if (productPrice) productPrice.textContent = productData.price;
     if (mainImage) mainImage.src = productData.image;
 
     // Gallery Thumbs & Arrow Controls
-    const images = productData.thumbs && productData.thumbs.length > 0 
-        ? productData.thumbs 
+    const images = productData.thumbs && productData.thumbs.length > 0
+        ? productData.thumbs
         : [productData.image];
 
     let currentImgIndex = 0;
@@ -163,7 +163,7 @@
             chip.innerHTML = `◆ ${spec.trim()}`;
             productChips.appendChild(chip);
         });
-        
+
         // Add default luxury badges
         const defaultBadges = ['Tarnish Free', 'Hypoallergenic'];
         defaultBadges.forEach(b => {
@@ -199,7 +199,7 @@
         addToCartBtn.addEventListener('click', () => {
             const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
             const cart = getCart();
-            
+
             const existingIndex = cart.findIndex(item => item.name === productData.name);
             if (existingIndex > -1) {
                 cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + qty;
@@ -208,7 +208,7 @@
                     name: productData.name,
                     price: productData.price,
                     image: productData.image,
-                    specs: productData.specs || 'Fine Jewelry',
+                    specs: productData.specs || 'Fine Jewellery',
                     quantity: qty
                 });
             }
@@ -225,7 +225,7 @@
         buyNowBtn.addEventListener('click', () => {
             const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
             const cart = getCart();
-            
+
             const existingIndex = cart.findIndex(item => item.name === productData.name);
             if (existingIndex > -1) {
                 cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + qty;
@@ -234,7 +234,7 @@
                     name: productData.name,
                     price: productData.price,
                     image: productData.image,
-                    specs: productData.specs || 'Fine Jewelry',
+                    specs: productData.specs || 'Fine Jewellery',
                     quantity: qty
                 });
             }
@@ -250,7 +250,7 @@
         trigger.addEventListener('click', () => {
             const item = trigger.parentElement;
             const isOpen = item.classList.contains('open');
-            
+
             document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
             if (!isOpen) item.classList.add('open');
         });

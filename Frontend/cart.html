@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Bag — MairaJewels</title>
-    <meta name="description" content="Review your selected fine jewelry items, calculate shipping, and proceed to checkout at Maira Jewels.">
+    <meta name="description"
+        content="Review your selected fine Jewellery items, calculate shipping, and proceed to checkout at Maira Jewels.">
     <link rel="icon" type="image/png" href="/MairaLogo.png">
     <link rel="shortcut icon" type="image/png" href="/MairaLogo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/src/css/style.css">
     <link rel="stylesheet" href="/src/css/pages.css">
 </head>
+
 <body>
 
     <!-- Header -->
@@ -38,7 +43,8 @@
                 <a href="contact.html">Contact</a>
                 <a href="login.html" id="nav-login-text">Log In</a>
                 <a href="cart.html" class="page-header__cart cart-link" aria-label="Shopping Bag">
-                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="page-header__bag-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 0 1-8 0"></path>
@@ -57,7 +63,8 @@
                 <span class="logo-text">MAIRA</span>
                 <span class="logo-sub">JEWELS</span>
             </a>
-            <button class="mobile-drawer__close" id="mobileDrawerClose" aria-label="Close Navigation Menu">&times;</button>
+            <button class="mobile-drawer__close" id="mobileDrawerClose"
+                aria-label="Close Navigation Menu">&times;</button>
         </div>
         <ul class="mobile-drawer__links">
             <li><a href="index.html">Home</a></li>
@@ -103,7 +110,8 @@
                 <div class="cart-empty__icon">◇</div>
                 <h2 class="cart-empty__title">Your bag is empty</h2>
                 <p class="cart-empty__text">Looks like you haven't added any pieces yet.</p>
-                <a href="index.html" class="btn btn--primary" style="width:auto; display:inline-flex;">Continue Shopping</a>
+                <a href="index.html" class="btn btn--primary" style="width:auto; display:inline-flex;">Continue
+                    Shopping</a>
             </div>
 
             <!-- Cart Items + Summary -->
@@ -119,7 +127,10 @@
                     <div class="cart-items__list" id="cart-items-list">
                         <!-- Injected by JS -->
                     </div>
-                    <a href="index.html" style="display:inline-flex; align-items:center; gap:0.5rem; margin-top:2rem; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--color-muted); transition:color 0.3s ease;" onmouseover="this.style.color='var(--color-charcoal)'" onmouseout="this.style.color='var(--color-muted)'">
+                    <a href="index.html"
+                        style="display:inline-flex; align-items:center; gap:0.5rem; margin-top:2rem; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--color-muted); transition:color 0.3s ease;"
+                        onmouseover="this.style.color='var(--color-charcoal)'"
+                        onmouseout="this.style.color='var(--color-muted)'">
                         ← Continue Shopping
                     </a>
                 </div>
@@ -144,7 +155,8 @@
                         <span id="summary-total">$0.00</span>
                     </div>
                     <a href="checkout.html" class="btn btn--primary" id="checkout-btn">Proceed to Checkout</a>
-                    <p style="text-align:center; font-size:0.7rem; color:var(--color-muted); margin-top:1.2rem; letter-spacing:0.05em;">
+                    <p
+                        style="text-align:center; font-size:0.7rem; color:var(--color-muted); margin-top:1.2rem; letter-spacing:0.05em;">
                         Secure checkout · SSL Encrypted
                     </p>
                 </div>
@@ -157,4 +169,5 @@
     <script type="module" src="/src/js/auth.js"></script>
     <script type="module" src="/src/js/cart.js"></script>
 </body>
+
 </html>
