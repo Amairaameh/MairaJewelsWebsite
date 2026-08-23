@@ -2,6 +2,8 @@
    MairaJewels — Cart Page JS
    ============================================= */
 
+import api from './api.js';
+
 (function () {
     'use strict';
 
@@ -36,8 +38,8 @@
         const cartCountBadge = document.getElementById('cart-count-badge');
 
         const summarySubtotal = document.getElementById('summary-subtotal');
-        const summaryTax = document.getElementById('summary-tax');
         const summaryTotal = document.getElementById('summary-total');
+        const summaryItemCount = document.getElementById('summary-item-count');
 
         const totalItemsCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
         if (cartCountBadge) cartCountBadge.textContent = totalItemsCount;
@@ -78,20 +80,21 @@
                         <input class="qty-value" type="text" value="${qty}" readonly>
                         <button class="qty-btn btn-plus" data-index="${index}">+</button>
                     </div>
-                    <div class="cart-item__price">${formatPrice(lineTotal)}</div>
-                    <button class="cart-item__remove btn-remove" data-index="${index}" title="Remove item">×</button>
+                    <div class="cart-item__price-remove">
+                        <div class="cart-item__price">${formatPrice(lineTotal)}</div>
+                        <button class="cart-item__remove btn-remove" data-index="${index}" title="Remove item" aria-label="Remove ${item.name}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                 `;
 
                 cartItemsList.appendChild(itemRow);
             });
 
-            // Summary math
-            const tax = subtotal * 0.08; // 8% dummy tax
-            const total = subtotal + tax;
-
+            // Summary math — no tax, total = subtotal
             if (summarySubtotal) summarySubtotal.textContent = formatPrice(subtotal);
-            if (summaryTax) summaryTax.textContent = formatPrice(tax);
-            if (summaryTotal) summaryTotal.textContent = formatPrice(total);
+            if (summaryTotal) summaryTotal.textContent = formatPrice(subtotal);
+            if (summaryItemCount) summaryItemCount.textContent = `${totalItemsCount} ${totalItemsCount === 1 ? 'item' : 'items'}`;
         }
 
         // Attach event handlers
@@ -142,11 +145,35 @@
         checkoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const cart = getCart();
-            if (cart.length === 0) {
-                alert('Your shopping bag is empty! Please add items before checking out.');
-                return;
+            if (cart.length === 0) return;
+            
+            const user = api.getUser();
+            const token = api.getToken();
+            if (!user || !token) {
+                window.location.href = 'login.html?redirect=checkout.html';
+            } else {
+                window.location.href = 'checkout.html';
             }
-            window.location.href = 'checkout.html';
+        });
+    }
+
+    // Promo Code — UI feedback only
+    const promoApplyBtn = document.getElementById('promo-apply-btn');
+    const promoInput = document.getElementById('promo-code');
+    if (promoApplyBtn && promoInput) {
+        promoApplyBtn.addEventListener('click', () => {
+            const code = promoInput.value.trim();
+            if (!code) return;
+            // Show inline message
+            let msg = document.getElementById('promo-msg');
+            if (!msg) {
+                msg = document.createElement('p');
+                msg.id = 'promo-msg';
+                msg.style.cssText = 'font-size:0.72rem;letter-spacing:0.06em;margin-top:0.5rem;color:#b44;';
+                promoApplyBtn.parentElement.insertAdjacentElement('afterend', msg);
+            }
+            msg.textContent = `Code "${code}" is not valid or has expired.`;
+            setTimeout(() => { if (msg) msg.textContent = ''; }, 4000);
         });
     }
 })();

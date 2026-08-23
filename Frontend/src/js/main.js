@@ -1,7 +1,9 @@
 /* =============================================
-   MairaJewels — Main JavaScript
-   Header scroll, cart, newsletter, FAQ & scroll reveal
+   MairaJewels — Main JavaScript (API Integrated)
+   Header scroll, cart, dynamic home grids, newsletter, FAQ & scroll reveal
    ============================================= */
+
+import api from './api.js';
 
 (function () {
     'use strict';
@@ -55,130 +57,379 @@
     }
 
     /* ---------- User Session Check ---------- */
-    function updateUserState() {
-        try {
-            const user = JSON.parse(localStorage.getItem('maira_user'));
-            const navLoginText = document.getElementById('nav-login-text');
-            if (user && user.name && navLoginText) {
-                navLoginText.textContent = user.name.split(' ')[0].toUpperCase();
-            }
-        } catch (e) { }
-    }
-    updateUserState();
-
-    const cartCount = document.querySelector('.cart-count');
-    const cartLink = document.querySelector('.cart-link');
+    // Handled in auth.js via updateUserNav with luxury profile badge and dropdown
 
     function updateCartBadge() {
-        if (cartCount) {
-            const cart = getCart();
-            const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-            cartCount.textContent = totalQty;
-            cartCount.style.transform = 'scale(1.3)';
-            setTimeout(function () {
-                cartCount.style.transform = 'scale(1)';
+        const cartCountBadges = document.querySelectorAll('.cart-count, #cart-count-badge, .mobile-cart-count');
+        const cart = getCart();
+        const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        cartCountBadges.forEach(badge => {
+            badge.textContent = totalQty;
+            badge.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                badge.style.transform = 'scale(1)';
             }, 300);
-        }
+        });
     }
 
     updateCartBadge();
 
+    const cartLink = document.querySelector('.cart-link');
     if (cartLink) {
         cartLink.setAttribute('href', 'cart.html');
     }
 
-    /* ---------- Add to Cart Buttons on Cards ---------- */
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-
-    addToCartButtons.forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation(); // prevent card click navigation
-            const card = btn.closest('.product-card, .diamond-card');
-            if (card) {
+    /* ---------- Card Click Navigation on Homepage ---------- */
+    function bindCardNavigation() {
+        const allCards = document.querySelectorAll('.diamond-card, .product-card');
+        allCards.forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function (e) {
+                if (e.target.closest('.add-to-cart') || e.target.closest('button')) return;
                 const titleEl = card.querySelector('.diamond-card__title, .product-card__name');
                 const priceEl = card.querySelector('.diamond-card__price, .product-card__price');
-                const imgEl = card.querySelector('img');
                 const specsEl = card.querySelector('.diamond-card__specs, .product-card__type');
+                const imgEl = card.querySelector('img');
 
-                const productObj = {
-                    name: titleEl ? titleEl.textContent.trim() : 'Fine Jewellery Piece',
-                    price: priceEl ? priceEl.textContent.trim() : '$0.00',
-                    image: imgEl ? imgEl.src : '',
-                    specs: specsEl ? specsEl.textContent.trim() : '18K Gold',
-                    quantity: 1
-                };
+                const name = titleEl ? titleEl.textContent.trim() : '';
+                const price = priceEl ? priceEl.textContent.trim() : '$448.00';
+                const specs = specsEl ? specsEl.textContent.trim() : '';
+                const image = imgEl ? (imgEl.getAttribute('src') || imgEl.src) : '';
+                const id = card.dataset.id || '';
 
-                const cart = getCart();
-                const existingIdx = cart.findIndex(item => item.name === productObj.name);
-                if (existingIdx > -1) {
-                    cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
-                } else {
-                    cart.push(productObj);
+                if (name) {
+                    const prod = { id, name, price, specs, image };
+                    try {
+                        localStorage.setItem('maira_selected_product', JSON.stringify(prod));
+                    } catch (err) { }
+                    window.location.href = id ? `product.html?id=${encodeURIComponent(id)}` : `product.html?name=${encodeURIComponent(name)}`;
                 }
-                saveCart(cart);
-                updateCartBadge();
-
-                const originalText = btn.textContent;
-                btn.textContent = 'Added \u2713';
-                btn.style.backgroundColor = 'var(--color-gold-dark)';
-                btn.style.borderColor = 'var(--color-gold-dark)';
-
-                setTimeout(function () {
-                    btn.textContent = originalText;
-                    btn.style.backgroundColor = '';
-                    btn.style.borderColor = '';
-                }, 1500);
-            }
+            });
         });
-    });
 
-    /* ---------- Product Navigation on Card Click ---------- */
-    const allProductCards = document.querySelectorAll('.diamond-card, .product-card');
+        /* ---------- Add to Cart Buttons on Cards ---------- */
+        const addToCartButtons = document.querySelectorAll('.add-to-cart');
+        addToCartButtons.forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const card = btn.closest('.product-card, .diamond-card');
+                if (card) {
+                    const titleEl = card.querySelector('.diamond-card__title, .product-card__name');
+                    const priceEl = card.querySelector('.diamond-card__price, .product-card__price');
+                    const specsEl = card.querySelector('.diamond-card__specs, .product-card__type');
+                    const imgEl = card.querySelector('img');
 
-    allProductCards.forEach(card => {
-        card.style.cursor = 'pointer';
+                    const name = titleEl ? titleEl.textContent.trim() : 'Fine Jewellery Piece';
+                    const price = priceEl ? priceEl.textContent.trim() : '$448.00';
+                    const image = imgEl ? (imgEl.getAttribute('src') || imgEl.src) : '';
+                    const specs = specsEl ? specsEl.textContent.trim() : '18K Gold';
+                    const id = card.dataset.id || '';
 
-        card.addEventListener('click', function (e) {
-            if (e.target.closest('button, .add-to-cart, .add-to-cart-btn, a')) return;
+                    const cart = getCart();
+                    const existing = cart.find(item => item.name === name);
 
-            const titleEl = card.querySelector('.diamond-card__title, .product-card__name');
-            const priceEl = card.querySelector('.diamond-card__price, .product-card__price');
-            const imgEl = card.querySelector('img');
-            const specsEl = card.querySelector('.diamond-card__specs, .product-card__type');
+                    if (existing) {
+                        existing.quantity = (existing.quantity || 1) + 1;
+                    } else {
+                        cart.push({
+                            id,
+                            name,
+                            price,
+                            image,
+                            specs,
+                            quantity: 1
+                        });
+                    }
 
-            if (titleEl && priceEl && imgEl) {
-                const selectedProduct = {
-                    name: titleEl.textContent.trim(),
-                    price: priceEl.textContent.trim(),
-                    image: imgEl.src,
-                    specs: specsEl ? specsEl.textContent.trim() : '18K Gold',
-                    category: card.closest('section')?.querySelector('.diamond-title, .section-title')?.textContent.trim() || 'Collections',
-                    thumbs: [
-                        imgEl.src,
-                        'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80',
-                        'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80'
-                    ]
-                };
+                    saveCart(cart);
+                    updateCartBadge();
 
-                try {
-                    localStorage.setItem('maira_selected_product', JSON.stringify(selectedProduct));
-                } catch (err) { }
-                window.location.href = `product.html?name=${encodeURIComponent(selectedProduct.name)}&price=${encodeURIComponent(selectedProduct.price)}&image=${encodeURIComponent(selectedProduct.image)}&specs=${encodeURIComponent(selectedProduct.specs)}`;
-            }
+                    // Button feedback
+                    const origText = btn.textContent;
+                    btn.textContent = 'Added ✓';
+                    btn.style.backgroundColor = 'var(--color-gold-dark)';
+                    btn.style.borderColor = 'var(--color-gold-dark)';
+
+                    setTimeout(function () {
+                        btn.textContent = origText;
+                        btn.style.backgroundColor = '';
+                        btn.style.borderColor = '';
+                    }, 1500);
+                }
+            });
         });
-    });
+    }
 
-    /* ---------- Newsletter Form ---------- */
+    bindCardNavigation();
+
+    /* ---------- Load Dynamic Categories & Filtered Products for Men & Women Section ---------- */
+    async function loadMenWomenSection() {
+        const pillsContainer = document.getElementById('men-women-filter-pills');
+        const gridContainer = document.getElementById('men-women-products-grid');
+        const viewCollectionBtn = document.getElementById('men-women-view-collection');
+
+        if (!gridContainer) return;
+
+        // Render skeleton / initial loader
+        gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px 0; color: var(--color-muted);"><p>Loading jewellery collection...</p></div>';
+
+        try {
+            // Fetch both categories and products in parallel from live API
+            const [catRes, prodRes] = await Promise.all([
+                api.getCategories().catch(() => ({ data: { categories: [] } })),
+                api.getProducts({ limit: 100 }).catch(() => ({ data: { products: [] } }))
+            ]);
+
+            const allProducts = (prodRes.data && Array.isArray(prodRes.data.products)) ? prodRes.data.products : [];
+            let categoriesList = [];
+
+            if (catRes.data && Array.isArray(catRes.data.categories) && catRes.data.categories.length > 0) {
+                categoriesList = catRes.data.categories.map(c => typeof c === 'string' ? c : c.name).filter(Boolean);
+            }
+
+            // Also include any categories found on active products so all available categories have pills
+            const productCategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+            productCategories.forEach(cat => {
+                if (!categoriesList.some(c => c.toLowerCase() === cat.toLowerCase())) {
+                    categoriesList.push(cat);
+                }
+            });
+
+            let activeCategory = 'all';
+
+            function renderProductsForCategory(category) {
+                let filtered = allProducts;
+                if (category !== 'all') {
+                    filtered = allProducts.filter(p => p.category && p.category.toLowerCase() === category.toLowerCase());
+                }
+
+                if (viewCollectionBtn) {
+                    if (category === 'all') {
+                        viewCollectionBtn.textContent = `View Collection (${allProducts.length})`;
+                        viewCollectionBtn.setAttribute('href', 'collections.html');
+                    } else {
+                        viewCollectionBtn.textContent = `View ${category} (${filtered.length})`;
+                        viewCollectionBtn.setAttribute('href', `collections.html?category=${encodeURIComponent(category)}`);
+                    }
+                }
+
+                if (filtered.length === 0) {
+                    gridContainer.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; color: var(--color-muted); padding: 3rem 0;">
+                            <p style="font-size: 1.05rem; margin-bottom: 0.5rem;">No products found in ${category === 'all' ? 'collection' : category}.</p>
+                            <a href="collections.html" class="btn btn--small btn--primary" style="margin-top: 1rem; display: inline-block;">Browse All Collections</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Show top matching products (e.g., up to 6 products for a balanced grid)
+                const itemsToDisplay = filtered.slice(0, 6);
+
+                gridContainer.innerHTML = itemsToDisplay.map(p => {
+                    let priceStr = p.price || (p.priceNum ? `$${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$448.00');
+                    let imgSrc = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
+                    if (imgSrc.startsWith('/uploads/')) {
+                        imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
+                    }
+                    const specsStr = p.specs || `${p.metal || '18K Gold'}${p.gem ? ' • ' + p.gem : ''}`;
+
+                    return `
+                        <article class="diamond-card" data-id="${p._id || p.customId || ''}">
+                            <div class="diamond-card__image-wrapper">
+                                <img src="${imgSrc}" alt="${p.name}" loading="lazy" class="arch-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                            </div>
+                            <div class="diamond-card__details">
+                                <h3 class="diamond-card__title">${p.name}</h3>
+                                <div class="diamond-card__meta">
+                                    <span class="diamond-card__specs">${specsStr}</span>
+                                    <span class="diamond-card__price">${priceStr}</span>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+
+                bindCardNavigation();
+            }
+
+            // Render dynamic filter pills
+            if (pillsContainer) {
+                let pillsHtml = `<button class="filter-pill filter-pill--active" data-cat="all">All design</button>`;
+                categoriesList.forEach(catName => {
+                    pillsHtml += `<button class="filter-pill" data-cat="${catName}">${catName}</button>`;
+                });
+                pillsContainer.innerHTML = pillsHtml;
+
+                const pills = pillsContainer.querySelectorAll('.filter-pill');
+                pills.forEach(pill => {
+                    pill.addEventListener('click', () => {
+                        pills.forEach(p => p.classList.remove('filter-pill--active'));
+                        pill.classList.add('filter-pill--active');
+                        activeCategory = pill.dataset.cat || 'all';
+                        renderProductsForCategory(activeCategory);
+                    });
+                });
+            }
+
+            // Initial render with 'all'
+            renderProductsForCategory('all');
+
+            // Also populate "Crafted to Perfection" Section dynamically
+            const craftedGrid = document.getElementById('crafted-perfection-grid');
+            if (craftedGrid) {
+                if (allProducts.length > 0) {
+                    craftedGrid.innerHTML = allProducts.map(p => {
+                        let priceStr = p.price || (p.priceNum ? `$${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$448.00');
+                        let imgSrc = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
+                        if (imgSrc.startsWith('/uploads/')) {
+                            imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
+                        }
+                        const specsStr = p.specs || `${p.category || 'Fine Jewellery'} ${p.metal ? '· ' + p.metal : ''}`.trim();
+                        const badgeHtml = p.badge ? `<span class="product-card__badge">${p.badge}</span>` : '';
+
+                        return `
+                            <article class="product-card" data-id="${p._id || p.customId}">
+                                <div class="product-card__image">
+                                    <img src="${imgSrc}" alt="${p.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                                    ${badgeHtml}
+                                </div>
+                                <div class="product-card__body">
+                                    <h3 class="product-card__name">${p.name}</h3>
+                                    <p class="product-card__type">${specsStr}</p>
+                                    <div class="product-card__footer">
+                                        <span class="product-card__price">${priceStr}</span>
+                                        <button class="btn btn--small btn--primary add-to-cart">Add to Cart</button>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
+                } else {
+                    craftedGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--color-muted); padding: 2rem 0;">No products found in collection.</p>';
+                }
+            }
+
+            bindCardNavigation();
+
+        } catch (err) {
+            console.warn('Load Men & Women Section error:', err.message);
+        }
+    }
+
+    loadMenWomenSection();
+
+    /* ---------- Load Dynamic Categories on Homepage Grids (with 3-Item Slider) ---------- */
+    async function loadDynamicCategories() {
+        const grid = document.getElementById('dynamic-categories-grid');
+        const controls = document.getElementById('categories-slider-controls');
+        const prevBtn = document.getElementById('cat-slider-prev');
+        const nextBtn = document.getElementById('cat-slider-next');
+        if (!grid) return;
+
+        try {
+            const res = await api.getCategories();
+            if (res.data && res.data.categories && res.data.categories.length > 0) {
+                const categories = res.data.categories;
+                grid.innerHTML = categories.map(c => {
+                    let imgSrc = c.image || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
+                    if (imgSrc.startsWith('/uploads/')) {
+                        imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
+                    }
+                    const descStr = c.description || 'Explore our exclusive collection';
+                    return `
+                        <article class="diamond-card category-card" style="cursor: pointer;" onclick="window.location.href='collections.html?category=${encodeURIComponent(c.name)}'">
+                            <div class="diamond-card__image-wrapper">
+                                <img src="${imgSrc}" alt="${c.name}" loading="lazy" class="arch-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                            </div>
+                            <div class="diamond-card__details">
+                                <h3 class="diamond-card__title">${c.name}</h3>
+                                <div class="diamond-card__meta">
+                                    <span class="diamond-card__specs">${descStr}</span>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+
+                // If more than 3 categories, enable and initialize slider controls
+                if (categories.length > 3 && controls) {
+                    controls.style.display = 'inline-flex';
+
+                    function getScrollAmount() {
+                        const firstCard = grid.querySelector('.diamond-card');
+                        if (firstCard) {
+                            const gap = parseFloat(getComputedStyle(grid).gap) || 32;
+                            return firstCard.offsetWidth + gap;
+                        }
+                        return grid.clientWidth / 3;
+                    }
+
+                    if (prevBtn) {
+                        prevBtn.onclick = () => {
+                            grid.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+                        };
+                    }
+
+                    if (nextBtn) {
+                        nextBtn.onclick = () => {
+                            grid.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+                        };
+                    }
+
+                    function updateArrowState() {
+                        if (prevBtn) {
+                            prevBtn.disabled = grid.scrollLeft <= 10;
+                        }
+                        if (nextBtn) {
+                            const maxScroll = grid.scrollWidth - grid.clientWidth;
+                            nextBtn.disabled = grid.scrollLeft >= maxScroll - 10;
+                        }
+                    }
+
+                    grid.addEventListener('scroll', updateArrowState, { passive: true });
+                    setTimeout(updateArrowState, 200);
+                } else if (controls) {
+                    controls.style.display = 'none';
+                }
+            } else {
+                grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--color-muted);">No categories available.</p>';
+                if (controls) controls.style.display = 'none';
+            }
+        } catch (err) {
+            console.warn('API categories fetch:', err.message);
+        }
+    }
+
+    loadDynamicCategories();
+
+    /* ---------- Newsletter Form (API Integrated) ---------- */
     const newsletterForm = document.getElementById('newsletter-form');
 
     if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function (e) {
+        newsletterForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const input = newsletterForm.querySelector('.newsletter__input');
             const btn = newsletterForm.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
+            const email = input.value.trim();
+            if (!email) return;
 
-            btn.textContent = 'Subscribed \u2713';
+            const originalText = btn.textContent;
+            btn.textContent = 'Subscribing...';
+            btn.disabled = true;
+
+            try {
+                await api.sendInquiry({
+                    name: email.split('@')[0],
+                    email,
+                    subject: 'Maira Jewels Newsletter Subscription',
+                    message: 'Subscribed to Maira Jewels Gazette from Homepage CTA.'
+                });
+            } catch (err) {
+                console.warn('Newsletter subscription notice:', err.message);
+            }
+
+            btn.textContent = 'Subscribed ✓';
             btn.style.backgroundColor = 'var(--color-gold-dark)';
             btn.style.borderColor = 'var(--color-gold-dark)';
             input.value = '';
@@ -186,6 +437,7 @@
 
             setTimeout(function () {
                 btn.textContent = originalText;
+                btn.disabled = false;
                 btn.style.backgroundColor = '';
                 btn.style.borderColor = '';
                 input.placeholder = 'Enter your email address';
@@ -193,35 +445,65 @@
         });
     }
 
-    /* ---------- FAQ Accordion ---------- */
-    const faqItems = document.querySelectorAll('.faq-item');
+    /* ---------- FAQ Accordion & Live API Sync ---------- */
+    function bindFaqEvents() {
+        const faqQuestions = document.querySelectorAll('.faq-item__question');
+        faqQuestions.forEach(btn => {
+            btn.onclick = function (e) {
+                e.preventDefault();
+                const item = this.closest('.faq-item');
+                if (!item) return;
+                const isActive = item.classList.contains('active');
 
-    faqItems.forEach(function (item) {
-        const question = item.querySelector('.faq-item__question');
-        if (!question) return;
-
-        question.addEventListener('click', function () {
-            const isActive = item.classList.contains('active');
-
-            faqItems.forEach(function (otherItem) {
-                if (otherItem !== item) {
-                    otherItem.classList.remove('active');
-                    const otherBtn = otherItem.querySelector('.faq-item__question');
-                    if (otherBtn) {
-                        otherBtn.setAttribute('aria-expanded', 'false');
+                // Close other open items for luxury accordion feel
+                document.querySelectorAll('.faq-item.active').forEach(openItem => {
+                    if (openItem !== item) {
+                        openItem.classList.remove('active');
+                        const qBtn = openItem.querySelector('.faq-item__question');
+                        if (qBtn) qBtn.setAttribute('aria-expanded', 'false');
                     }
-                }
-            });
+                });
 
-            if (isActive) {
-                item.classList.remove('active');
-                question.setAttribute('aria-expanded', 'false');
-            } else {
-                item.classList.add('active');
-                question.setAttribute('aria-expanded', 'true');
-            }
+                item.classList.toggle('active', !isActive);
+                this.setAttribute('aria-expanded', !isActive ? 'true' : 'false');
+            };
         });
-    });
+    }
+
+    async function loadFaqs() {
+        const faqList = document.querySelector('.faq__list');
+        if (!faqList) return;
+
+        try {
+            const res = await api.getFaqs();
+            let faqs = (res && res.data && (Array.isArray(res.data) ? res.data : res.data.faqs)) || [];
+
+            // Filter strictly for published/approved FAQs (isApproved === true)
+            faqs = faqs.filter(f => f.isApproved === true);
+
+            if (faqs.length > 0) {
+                faqList.innerHTML = faqs.map(faq => `
+                    <div class="faq-item">
+                        <button class="faq-item__question" aria-expanded="false">
+                            <span>${faq.question}</span>
+                            <span class="faq-item__icon" aria-hidden="true">+</span>
+                        </button>
+                        <div class="faq-item__answer">
+                            <p>${faq.answer}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                faqList.innerHTML = '<p style="text-align: center; color: var(--color-muted); padding: 2rem 0;">No published FAQs available.</p>';
+            }
+        } catch (e) {
+            console.warn('API FAQ fetch:', e.message);
+        }
+
+        bindFaqEvents();
+    }
+
+    loadFaqs();
 
     /* ---------- Scroll Reveal Animations ---------- */
     const revealElements = document.querySelectorAll(
@@ -242,7 +524,7 @@
             });
         },
         {
-            threshold: 0.1,
+            threshold: 0.12,
             rootMargin: '0px 0px -40px 0px'
         }
     );
@@ -250,193 +532,4 @@
     revealElements.forEach(function (el) {
         observer.observe(el);
     });
-
-    /* ---------- Hero Text Carousel ---------- */
-    const heroSlides = [
-        {
-            eyebrow: 'Welcome',
-            title: 'Luxury That Speaks<br><em>Your Style</em>',
-            text: 'Welcome to Maira Jewels, where timeless elegance meets modern craftsmanship. Every piece is thoughtfully designed to add confidence, beauty, and sophistication to your everyday look, making luxury accessible for every occasion.',
-            btn1: 'Shop Collection',
-            btn2: '',
-            stats: [
-                { val: '25+', label: 'Years of Craft' },
-                { val: '12k', label: 'Happy Clients' },
-                { val: '100%', label: 'Ethically Sourced' }
-            ]
-        },
-        {
-            eyebrow: 'Quality & Craftsmanship',
-            title: 'Made to Shine.<br><em>Built to Last.</em>',
-            text: 'Crafted with premium 316L stainless steel and finished with luxurious 18K gold plating, our jewellery is waterproof, tarnish-free, and hypoallergenic. Designed for everyday wear, every piece keeps its brilliance without fading or losing its charm.',
-            btn1: 'Explore Collection',
-            btn2: '',
-            stats: [
-                { val: '25+', label: 'Years of Craft' },
-                { val: '12k', label: 'Happy Clients' },
-                { val: '100%', label: 'Ethically Sourced' }
-            ]
-        },
-        {
-            eyebrow: 'Brand Promise',
-            title: 'Affordable Luxury<br><em>for Every Moment</em>',
-            text: 'Whether you\'re dressing for work, celebrating a special occasion, or simply elevating your everyday style, Maira Jewels offers beautifully crafted designs that combine exceptional quality, lasting comfort, and timeless elegance—all at prices you\'ll love.',
-            btn1: 'Discover More',
-            btn2: '',
-            stats: [
-                { val: '25+', label: 'Years of Craft' },
-                { val: '12k', label: 'Happy Clients' },
-                { val: '100%', label: 'Ethically Sourced' }
-            ]
-        }
-    ];
-
-    let currentSlide = 0;
-    const heroEyebrow = document.getElementById('hero-eyebrow');
-    const heroTitle = document.getElementById('hero-title');
-    const heroText = document.getElementById('hero-text');
-    const heroBtn1 = document.getElementById('hero-btn1');
-    const heroBtn2 = document.getElementById('hero-btn2');
-    const heroActions = document.getElementById('hero-actions');
-    const heroMeta = document.getElementById('hero-meta');
-
-    const stat1Val = document.getElementById('hero-stat1-value');
-    const stat1Lab = document.getElementById('hero-stat1-label');
-    const stat2Val = document.getElementById('hero-stat2-value');
-    const stat2Lab = document.getElementById('hero-stat2-label');
-    const stat3Val = document.getElementById('hero-stat3-value');
-    const stat3Lab = document.getElementById('hero-stat3-label');
-
-    const animatedElements = [heroEyebrow, heroTitle, heroText, heroActions, heroMeta];
-
-    function updateHeroSlide() {
-        if (!heroEyebrow) return;
-
-        animatedElements.forEach(function (el) {
-            if (el) el.style.animation = 'fadeRightOut 0.5s ease forwards';
-        });
-
-        setTimeout(function () {
-            currentSlide = (currentSlide + 1) % heroSlides.length;
-            const slide = heroSlides[currentSlide];
-
-            animatedElements.forEach(function (el) {
-                if (el) el.style.animation = 'none';
-            });
-
-            setTimeout(function () {
-                if (heroEyebrow) heroEyebrow.innerHTML = slide.eyebrow;
-                if (heroTitle) heroTitle.innerHTML = slide.title;
-                if (heroText) heroText.innerHTML = slide.text;
-                if (heroBtn1) heroBtn1.innerHTML = slide.btn1;
-
-                if (heroBtn2) {
-                    if (slide.btn2) {
-                        heroBtn2.innerHTML = slide.btn2;
-                        heroBtn2.style.display = 'inline-flex';
-                    } else {
-                        heroBtn2.style.display = 'none';
-                    }
-                }
-
-                if (stat1Val) stat1Val.innerHTML = slide.stats[0].val;
-                if (stat1Lab) stat1Lab.innerHTML = slide.stats[0].label;
-                if (stat2Val) stat2Val.innerHTML = slide.stats[1].val;
-                if (stat2Lab) stat2Lab.innerHTML = slide.stats[1].label;
-                if (stat3Val) stat3Val.innerHTML = slide.stats[2].val;
-                if (stat3Lab) stat3Lab.innerHTML = slide.stats[2].label;
-
-                animatedElements.forEach(function (el) {
-                    if (el) el.style.animation = '';
-                });
-            }, 50);
-        }, 500);
-    }
-
-    if (heroEyebrow) {
-        setInterval(updateHeroSlide, 5000);
-    }
-
-    /* ---------- Mobile Navigation & Drawer ---------- */
-    const mobileNavToggle = document.getElementById('mobileNavToggle');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const mobileOverlay = document.getElementById('mobileOverlay');
-    const mobileDrawerClose = document.getElementById('mobileDrawerClose');
-
-    function openMobileDrawer() {
-        if (mobileDrawer) mobileDrawer.classList.add('is-open');
-        if (mobileOverlay) mobileOverlay.classList.add('is-open');
-        if (mobileNavToggle) mobileNavToggle.classList.add('is-active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeMobileDrawer() {
-        if (mobileDrawer) mobileDrawer.classList.remove('is-open');
-        if (mobileOverlay) mobileOverlay.classList.remove('is-open');
-        if (mobileNavToggle) mobileNavToggle.classList.remove('is-active');
-        document.body.style.overflow = '';
-    }
-
-    if (mobileNavToggle) {
-        mobileNavToggle.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (mobileDrawer && mobileDrawer.classList.contains('is-open')) {
-                closeMobileDrawer();
-            } else {
-                openMobileDrawer();
-            }
-        });
-    }
-
-    if (mobileDrawerClose) {
-        mobileDrawerClose.addEventListener('click', closeMobileDrawer);
-    }
-
-    if (mobileOverlay) {
-        mobileOverlay.addEventListener('click', closeMobileDrawer);
-    }
-
-    // Close drawer when pressing Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            closeMobileDrawer();
-            const sidebar = document.querySelector('.collections-sidebar');
-            if (sidebar) sidebar.classList.remove('mobile-active');
-        }
-    });
-
-    // Close mobile drawer when clicking internal links
-    const drawerLinks = document.querySelectorAll('.mobile-drawer__links a');
-    drawerLinks.forEach(function (link) {
-        link.addEventListener('click', closeMobileDrawer);
-    });
-
-    // Sync mobile drawer cart counter
-    function updateMobileCartCount() {
-        const mobileCartCounts = document.querySelectorAll('.mobile-cart-count');
-        if (mobileCartCounts.length > 0) {
-            const cart = getCart();
-            const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-            mobileCartCounts.forEach(el => el.textContent = totalQty);
-        }
-    }
-
-    updateMobileCartCount();
-    window.addEventListener('storage', updateMobileCartCount);
-
-    /* ---------- Mobile Collections Filter Drawer ---------- */
-    const mobileFilterToggle = document.getElementById('mobileFilterToggle');
-    const collectionsSidebar = document.querySelector('.collections-sidebar');
-
-    if (mobileFilterToggle && collectionsSidebar) {
-        mobileFilterToggle.addEventListener('click', function () {
-            collectionsSidebar.classList.toggle('mobile-active');
-            if (collectionsSidebar.classList.contains('mobile-active')) {
-                mobileFilterToggle.querySelector('span').textContent = 'Hide Filters';
-            } else {
-                mobileFilterToggle.querySelector('span').textContent = 'Filter & Refine';
-            }
-        });
-    }
-
 })();

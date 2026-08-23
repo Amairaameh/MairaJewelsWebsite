@@ -1,11 +1,19 @@
 /* =============================================
-   MairaJewels — Product Detail Page JS
+   MairaJewels - Product Detail Page JS (Full Dynamic API)
+   Handles PDP details, gallery, quantity, bag, buy now, accordions & related
    ============================================= */
+
+import api from './api.js';
 
 (function () {
     'use strict';
 
-    // Helper to get cart from localStorage
+    // State
+    let currentProduct = null;
+    let currentGalleryImages = [];
+    let currentImageIndex = 0;
+
+    /* ---------- Cart Storage Utilities ---------- */
     function getCart() {
         try {
             return JSON.parse(localStorage.getItem('maira_cart')) || [];
@@ -19,384 +27,473 @@
     }
 
     function updateCartBadge() {
-        const badge = document.getElementById('cart-count-badge');
+        const badge = document.getElementById('cart-count-badge') || document.querySelector('.cart-count') || document.querySelector('.mobile-cart-count');
         if (!badge) return;
         const cart = getCart();
         const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-        badge.textContent = totalItems;
+        document.querySelectorAll('.cart-count, #cart-count-badge, .mobile-cart-count').forEach(el => {
+            el.textContent = totalItems;
+        });
     }
 
     function showToast(msg) {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.className = 'toast';
+            document.body.appendChild(toast);
+        }
         toast.textContent = msg || 'Added to Bag ✓';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // Load Product Data
-    let productData = null;
-    try {
+    function parsePriceNum(priceVal) {
+        if (typeof priceVal === 'number') return priceVal;
+        if (!priceVal) return 0;
+        const cleaned = String(priceVal).replace(/[^0-9.]/g, '');
+        return parseFloat(cleaned) || 0;
+    }
+
+    function formatPrice(val) {
+        return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /* ---------- Initial URL / Storage Extraction ---------- */
+    function getInitialProductFromContext() {
         const urlParams = new URLSearchParams(window.location.search);
+        const urlId = urlParams.get('id');
         const urlName = urlParams.get('name');
-        if (urlName) {
-            productData = {
-                name: urlName,
-                price: urlParams.get('price') || '$448.00',
-                image: urlParams.get('image') || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-                specs: urlParams.get('specs') || '18K Gold',
-                category: urlParams.get('category') || 'Fine Jewellery',
-                thumbs: [
-                    urlParams.get('image') || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-                    'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80',
-                    'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80'
-                ]
-            };
-        } else {
+        const urlPrice = urlParams.get('price');
+        const urlSpecs = urlParams.get('specs');
+        const urlCategory = urlParams.get('category');
+
+        try {
             const stored = localStorage.getItem('maira_selected_product');
             if (stored) {
-                productData = JSON.parse(stored);
+                const parsed = JSON.parse(stored);
+                if (urlId && (parsed.id === urlId || parsed.mongoId === urlId)) {
+                    return parsed;
+                }
+                if (!urlId && urlName && parsed.name === urlName) {
+                    return parsed;
+                }
+            }
+        } catch (e) {}
+
+        if (urlName) {
+            return {
+                id: urlId || 'prod-' + Date.now(),
+                mongoId: urlId,
+                name: decodeURIComponent(urlName),
+                price: urlPrice ? decodeURIComponent(urlPrice) : '$448.00',
+                priceNum: parsePriceNum(urlPrice || 448),
+                image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
+                specs: urlSpecs ? decodeURIComponent(urlSpecs) : '18K Gold',
+                category: urlCategory ? decodeURIComponent(urlCategory) : 'Fine Jewellery',
+                thumbs: [],
+                description: '',
+                details: ''
+            };
+        }
+
+        try {
+            const stored = localStorage.getItem('maira_selected_product');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+        } catch (e) {}
+
+        return null;
+    }
+
+    /* ---------- Render PDP UI ---------- */
+    function renderProductUI(p) {
+        if (!p) return;
+        currentProduct = p;
+
+        document.title = `${p.name} — MairaJewels`;
+
+        const breadcrumbName = document.getElementById('breadcrumb-name');
+        const pageTitle = document.getElementById('page-title');
+        const mainImage = document.getElementById('main-image');
+        const galleryThumbs = document.getElementById('gallery-thumbs');
+        const productCategory = document.getElementById('product-category');
+        const productName = document.getElementById('product-name');
+        const productPrice = document.getElementById('product-price');
+        const productTagline = document.getElementById('product-tagline');
+        const productChips = document.getElementById('product-chips');
+        const productDetailsText = document.getElementById('product-details-text');
+
+        if (breadcrumbName) breadcrumbName.textContent = p.name;
+        if (pageTitle) pageTitle.textContent = `${p.name} — MairaJewels`;
+        if (productCategory) productCategory.textContent = p.category || 'Fine Jewellery';
+        if (productName) productName.textContent = p.name;
+        
+        const displayPrice = (typeof p.price === 'string' && p.price.startsWith('$')) 
+            ? p.price 
+            : formatPrice(p.priceNum || parsePriceNum(p.price));
+        if (productPrice) productPrice.textContent = displayPrice;
+
+        if (productTagline) {
+            productTagline.textContent = p.description || 'Handcrafted with precision, this piece is designed to be your everyday signature — where modern minimalism meets timeless elegance.';
+        }
+
+        if (productDetailsText) {
+            if (p.details) {
+                productDetailsText.textContent = p.details;
+            } else if (p.description) {
+                productDetailsText.textContent = p.description;
             }
         }
-    } catch (e) {
-        console.error('Error loading product data', e);
-    }
 
-    // Fallback product if directly opening product.html without selecting
-    if (!productData || !productData.name) {
-        productData = {
-            id: 'default-1',
-            name: 'Sunburst Fan Earrings',
-            price: '$448.00',
-            specs: '22K Gold • 11.2gm',
-            category: 'Earrings',
-            image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80'
-            ]
-        };
-    }
+        // Specs Chips
+        if (productChips) {
+            productChips.innerHTML = '';
+            const chips = [];
+            if (p.metal) chips.push(p.metal);
+            if (p.gem) chips.push(p.gem);
+            if (p.specs && !p.metal && !p.gem) {
+                p.specs.split('•').forEach(s => {
+                    const clean = s.trim();
+                    if (clean) chips.push(clean);
+                });
+            } else if (chips.length === 0 && p.specs) {
+                chips.push(p.specs);
+            }
+            if (chips.length === 0) {
+                chips.push('18K Gold Plated', 'Hypoallergenic', 'Tarnish Free');
+            }
 
-    if (!productData || !productData.image || productData.image.trim() === '') {
-        productData.image = 'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80';
-    }
-
-    // Populate Page Elements
-    document.title = `${productData.name} — MairaJewels`;
-
-    const breadcrumbName = document.getElementById('breadcrumb-name');
-    const pageTitle = document.getElementById('page-title');
-    const mainImage = document.getElementById('main-image');
-    const galleryThumbs = document.getElementById('gallery-thumbs');
-    const productCategory = document.getElementById('product-category');
-    const productName = document.getElementById('product-name');
-    const productPrice = document.getElementById('product-price');
-    const productChips = document.getElementById('product-chips');
-
-    if (breadcrumbName) breadcrumbName.textContent = productData.name;
-    if (pageTitle) pageTitle.textContent = `${productData.name} — MairaJewels`;
-    if (productCategory) productCategory.textContent = productData.category || 'Fine Jewellery';
-    if (productName) productName.textContent = productData.name;
-    if (productPrice) productPrice.textContent = productData.price;
-    if (mainImage) mainImage.src = productData.image;
-
-    // Gallery Thumbs & Arrow Controls
-    const images = productData.thumbs && productData.thumbs.length > 0
-        ? productData.thumbs
-        : [productData.image];
-
-    let currentImgIndex = 0;
-
-    function updateMainImage(index) {
-        if (index < 0) index = images.length - 1;
-        if (index >= images.length) index = 0;
-        currentImgIndex = index;
-
-        if (mainImage) mainImage.src = images[currentImgIndex];
-
-        const thumbs = document.querySelectorAll('.product-gallery__thumb');
-        thumbs.forEach((t, idx) => {
-            if (idx === currentImgIndex) t.classList.add('active');
-            else t.classList.remove('active');
-        });
-    }
-
-    const galleryPrev = document.getElementById('gallery-prev');
-    const galleryNext = document.getElementById('gallery-next');
-
-    if (galleryPrev) {
-        galleryPrev.addEventListener('click', (e) => {
-            e.stopPropagation();
-            updateMainImage(currentImgIndex - 1);
-        });
-    }
-
-    if (galleryNext) {
-        galleryNext.addEventListener('click', (e) => {
-            e.stopPropagation();
-            updateMainImage(currentImgIndex + 1);
-        });
-    }
-
-    if (galleryThumbs) {
-        galleryThumbs.innerHTML = '';
-        images.forEach((src, idx) => {
-            const thumb = document.createElement('div');
-            thumb.className = `product-gallery__thumb ${idx === 0 ? 'active' : ''}`;
-            thumb.innerHTML = `<img src="${src}" alt="${productData.name} view ${idx + 1}">`;
-            thumb.addEventListener('click', () => {
-                updateMainImage(idx);
+            chips.forEach(chipText => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.textContent = chipText.toUpperCase();
+                productChips.appendChild(chip);
             });
-            galleryThumbs.appendChild(thumb);
-        });
-    }
-
-    // Chips / Badges
-    if (productChips) {
-        productChips.innerHTML = '';
-        const specs = productData.specs ? productData.specs.split('•') : ['18K Plated', 'Waterproof'];
-        specs.forEach(spec => {
-            const chip = document.createElement('span');
-            chip.className = 'chip';
-            chip.innerHTML = `◆ ${spec.trim()}`;
-            productChips.appendChild(chip);
-        });
-
-        // Add default luxury badges
-        const defaultBadges = ['Tarnish Free', 'Hypoallergenic'];
-        defaultBadges.forEach(b => {
-            const chip = document.createElement('span');
-            chip.className = 'chip';
-            chip.innerHTML = `◆ ${b}`;
-            productChips.appendChild(chip);
-        });
-    }
-
-    // Quantity Selector
-    const qtyInput = document.getElementById('qty-value');
-    const qtyMinus = document.getElementById('qty-minus');
-    const qtyPlus = document.getElementById('qty-plus');
-
-    if (qtyMinus && qtyInput) {
-        qtyMinus.addEventListener('click', () => {
-            let val = parseInt(qtyInput.value) || 1;
-            if (val > 1) qtyInput.value = val - 1;
-        });
-    }
-
-    if (qtyPlus && qtyInput) {
-        qtyPlus.addEventListener('click', () => {
-            let val = parseInt(qtyInput.value) || 1;
-            if (val < 10) qtyInput.value = val + 1;
-        });
-    }
-
-    // Add to Cart Action
-    const addToCartBtn = document.getElementById('add-to-cart-btn');
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', () => {
-            const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
-            const cart = getCart();
-
-            const existingIndex = cart.findIndex(item => item.name === productData.name);
-            if (existingIndex > -1) {
-                cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + qty;
-            } else {
-                cart.push({
-                    name: productData.name,
-                    price: productData.price,
-                    image: productData.image,
-                    specs: productData.specs || 'Fine Jewellery',
-                    quantity: qty
-                });
-            }
-
-            saveCart(cart);
-            updateCartBadge();
-            showToast(`${productData.name} added to Bag ✓`);
-        });
-    }
-
-    // Buy Now / Checkout Action
-    const buyNowBtn = document.getElementById('buy-now-btn');
-    if (buyNowBtn) {
-        buyNowBtn.addEventListener('click', () => {
-            const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
-            const cart = getCart();
-
-            const existingIndex = cart.findIndex(item => item.name === productData.name);
-            if (existingIndex > -1) {
-                cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + qty;
-            } else {
-                cart.push({
-                    name: productData.name,
-                    price: productData.price,
-                    image: productData.image,
-                    specs: productData.specs || 'Fine Jewellery',
-                    quantity: qty
-                });
-            }
-
-            saveCart(cart);
-            window.location.href = 'checkout.html';
-        });
-    }
-
-    // Accordions
-    const accordionTriggers = document.querySelectorAll('.accordion-item__trigger');
-    accordionTriggers.forEach(trigger => {
-        trigger.addEventListener('click', () => {
-            const item = trigger.parentElement;
-            const isOpen = item.classList.contains('open');
-
-            document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
-            if (!isOpen) item.classList.add('open');
-        });
-    });
-
-    // Related Products Logic (Zara Style)
-    const catalogProducts = [
-        {
-            name: 'Emerald Royal Ring',
-            price: '$1,133.00',
-            category: 'Rings',
-            specs: '18K • 15.2gm',
-            image: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1603564158650-9b23f9d0b14b?auto=format&fit=crop&w=800&q=80'
-            ]
-        },
-        {
-            name: 'Crescent Moons',
-            price: '$2,158.00',
-            category: 'Earrings',
-            specs: '18K • 7.2gm',
-            image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=800&q=80'
-            ]
-        },
-        {
-            name: 'Tree Of Life Drops',
-            price: '$333.00',
-            category: 'Earrings',
-            specs: '18K Gold • 7.2gm',
-            image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=800&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'
-            ]
-        },
-        {
-            name: 'Rosé Promise Ring',
-            price: '$3,200.00',
-            category: 'Rings',
-            specs: 'Rose Gold • Pink Diamond',
-            image: 'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?auto=format&fit=crop&w=800&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'
-            ]
-        },
-        {
-            name: 'Royal Gold Diamond Watch',
-            price: '$3,850.00',
-            category: 'Watches',
-            specs: '18K Gold • Automatic',
-            image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80'
-            ]
-        },
-        {
-            name: "Men's Diamond Signet Ring",
-            price: '$2,450.00',
-            category: "Men's Accessories",
-            specs: '24K Gold • 18.5gm',
-            image: 'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&w=800&q=80',
-            thumbs: [
-                'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'
-            ]
         }
-    ];
 
-    const relatedGrid = document.getElementById('related-grid');
-    if (relatedGrid) {
-        relatedGrid.innerHTML = '';
-        const filtered = catalogProducts.filter(p => p.name !== productData.name);
-        const displayList = filtered.slice(0, 4);
+        // Gallery Images Setup
+        let rawImages = [];
+        if (Array.isArray(p.images) && p.images.length > 0) {
+            rawImages = p.images;
+        } else if (Array.isArray(p.thumbs) && p.thumbs.length > 0) {
+            rawImages = p.thumbs;
+        } else if (p.image) {
+            rawImages = [p.image];
+        } else {
+            rawImages = ['https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'];
+        }
+        currentGalleryImages = rawImages;
+        currentImageIndex = 0;
 
-        displayList.forEach((item, idx) => {
-            const card = document.createElement('article');
-            card.className = 'related-card';
-            card.style.animationDelay = (idx * 0.12) + 's';
-            card.innerHTML = `
-                <div class="related-card__image">
-                    <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
-                </div>
-                <div class="related-card__body">
-                    <span class="related-card__category">${item.category}</span>
-                    <h3 class="related-card__name">${item.name}</h3>
-                    <div class="related-card__footer">
-                        <span class="related-card__price">${item.price}</span>
-                        <button class="btn btn--sm btn--primary add-to-bag-related">Add to Bag</button>
-                    </div>
-                </div>
-            `;
+        updateGalleryDisplay();
+    }
 
-            const addBtn = card.querySelector('.add-to-bag-related');
-            if (addBtn) {
-                addBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const cart = getCart();
-                    const existingIndex = cart.findIndex(i => i.name === item.name);
-                    if (existingIndex > -1) {
-                        cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + 1;
-                    } else {
-                        cart.push({
-                            name: item.name,
-                            price: item.price,
-                            image: item.image,
-                            specs: item.specs || '18K Gold',
-                            quantity: 1
-                        });
+    function updateGalleryDisplay() {
+        const mainImage = document.getElementById('main-image');
+        const galleryThumbs = document.getElementById('gallery-thumbs');
+
+        if (mainImage && currentGalleryImages.length > 0) {
+            const activeUrl = currentGalleryImages[currentImageIndex] || currentGalleryImages[0];
+            mainImage.src = activeUrl;
+            mainImage.alt = currentProduct ? currentProduct.name : 'Product Image';
+        }
+
+        if (galleryThumbs) {
+            galleryThumbs.innerHTML = '';
+            if (currentGalleryImages.length > 1) {
+                currentGalleryImages.forEach((imgUrl, idx) => {
+                    const thumbBtn = document.createElement('button');
+                    thumbBtn.className = `product-gallery__thumb ${idx === currentImageIndex ? 'product-gallery__thumb--active active' : ''}`;
+                    thumbBtn.setAttribute('aria-label', `View image ${idx + 1}`);
+                    thumbBtn.innerHTML = `<img src="${imgUrl}" alt="Thumbnail ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    thumbBtn.addEventListener('click', () => {
+                        currentImageIndex = idx;
+                        updateGalleryDisplay();
+                    });
+                    galleryThumbs.appendChild(thumbBtn);
+                });
+            }
+        }
+    }
+
+    /* ---------- Fetch Dynamic Product & Related from Backend API ---------- */
+    async function loadDynamicProductData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id') || (currentProduct && (currentProduct.mongoId || currentProduct.id));
+        const productName = urlParams.get('name');
+
+        let loadedProduct = null;
+
+        // 1. Try to fetch product by ID from API
+        if (productId && productId !== 'default-1' && !productId.startsWith('prod-')) {
+            try {
+                const res = await api.getProductById(productId);
+                if (res.data && res.data.product) {
+                    loadedProduct = res.data.product;
+                }
+            } catch (err) {
+                console.warn('API getProductById attempt:', err.message);
+            }
+        }
+
+        // 2. If not found by ID, query products list to match by name or customId
+        if (!loadedProduct) {
+            try {
+                const res = await api.getProducts({ limit: 100 });
+                if (res.data && res.data.products && res.data.products.length > 0) {
+                    const all = res.data.products;
+                    if (productId) {
+                        loadedProduct = all.find(p => p._id === productId || p.customId === productId);
                     }
-                    saveCart(cart);
-                    updateCartBadge();
-
-                    const origText = addBtn.textContent;
-                    addBtn.textContent = 'Added \u2713';
-                    addBtn.style.backgroundColor = 'var(--color-gold-dark)';
-                    addBtn.style.borderColor = 'var(--color-gold-dark)';
-
-                    setTimeout(() => {
-                        addBtn.textContent = origText;
-                        addBtn.style.backgroundColor = '';
-                        addBtn.style.borderColor = '';
-                    }, 1500);
-
-                    showToast(`${item.name} added to Bag ✓`);
-                });
+                    if (!loadedProduct && productName) {
+                        const targetName = decodeURIComponent(productName).toLowerCase().trim();
+                        loadedProduct = all.find(p => p.name.toLowerCase().trim() === targetName);
+                    }
+                }
+            } catch (err) {
+                console.warn('API getProducts fallback search:', err.message);
             }
+        }
 
-            card.addEventListener('click', () => {
-                localStorage.setItem('maira_selected_product', JSON.stringify(item));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setTimeout(() => {
-                    window.location.reload();
-                }, 250);
+        if (loadedProduct) {
+            const p = loadedProduct;
+            const normalized = {
+                id: p._id || p.customId,
+                mongoId: p._id,
+                name: p.name,
+                price: p.price || `$${p.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                priceNum: p.priceNum || parsePriceNum(p.price),
+                category: p.category,
+                metal: p.metal,
+                gem: p.gem,
+                specs: p.specs || `${p.metal || ''} ${p.gem ? '• ' + p.gem : ''}`.trim(),
+                image: p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
+                images: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),
+                thumbs: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),
+                description: p.description || '',
+                details: p.details || ''
+            };
+            renderProductUI(normalized);
+        }
+
+        // Load Related Products dynamically from API
+        loadRelatedProducts();
+    }
+
+    async function loadRelatedProducts() {
+        const relatedGrid = document.getElementById('related-grid');
+        if (!relatedGrid) return;
+
+        try {
+            const res = await api.getProducts({ limit: 8 });
+            if (res.data && res.data.products && res.data.products.length > 0) {
+                const currentId = currentProduct ? (currentProduct.mongoId || currentProduct.id) : null;
+                const currentName = currentProduct ? currentProduct.name.toLowerCase() : '';
+                
+                // Filter out current active product
+                const related = res.data.products
+                    .filter(p => (p._id !== currentId && p.customId !== currentId && p.name.toLowerCase() !== currentName))
+                    .slice(0, 4);
+
+                if (related.length > 0) {
+                    relatedGrid.innerHTML = '';
+                    related.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'related-card';
+                        const itemPrice = item.price || `$${item.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                        const itemImg = item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
+
+                        card.innerHTML = `
+                            <div class="related-card__image">
+                                <img src="${itemImg}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                            </div>
+                            <div class="related-card__body">
+                                <span class="related-card__category">${item.category || 'Fine Jewellery'}</span>
+                                <h4 class="related-card__name">${item.name}</h4>
+                                <div class="related-card__footer">
+                                    <span class="related-card__price">${itemPrice}</span>
+                                </div>
+                            </div>
+                        `;
+
+                        card.addEventListener('click', () => {
+                            const prodData = {
+                                id: item._id || item.customId,
+                                name: item.name,
+                                price: itemPrice,
+                                priceNum: item.priceNum || parsePriceNum(itemPrice),
+                                category: item.category,
+                                specs: item.specs || `${item.metal || ''} ${item.gem ? '• ' + item.gem : ''}`,
+                                image: itemImg,
+                                thumbs: item.images || [itemImg]
+                            };
+                            try {
+                                localStorage.setItem('maira_selected_product', JSON.stringify(prodData));
+                            } catch (e) {}
+                            window.location.href = `product.html?id=${encodeURIComponent(item._id || item.customId)}`;
+                        });
+
+                        relatedGrid.appendChild(card);
+                    });
+                }
+            }
+        } catch (err) {
+            console.warn('Could not load related products:', err.message);
+        }
+    }
+
+    /* ---------- Attach Interactive Controls ---------- */
+    function initPDPEventListeners() {
+        const qtyValue = document.getElementById('qty-value');
+        const qtyMinus = document.getElementById('qty-minus');
+        const qtyPlus = document.getElementById('qty-plus');
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        const buyNowBtn = document.getElementById('buy-now-btn');
+        const galleryPrev = document.getElementById('gallery-prev');
+        const galleryNext = document.getElementById('gallery-next');
+
+        // 1. Quantity Minus
+        if (qtyMinus && qtyValue) {
+            qtyMinus.addEventListener('click', (e) => {
+                e.preventDefault();
+                let val = parseInt(qtyValue.value, 10) || 1;
+                if (val > 1) {
+                    qtyValue.value = val - 1;
+                }
             });
+        }
 
-            relatedGrid.appendChild(card);
+        // 2. Quantity Plus
+        if (qtyPlus && qtyValue) {
+            qtyPlus.addEventListener('click', (e) => {
+                e.preventDefault();
+                let val = parseInt(qtyValue.value, 10) || 1;
+                if (val < 10) {
+                    qtyValue.value = val + 1;
+                }
+            });
+        }
+
+        // 3. Add to Bag
+        if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (!currentProduct) return;
+
+                const qty = qtyValue ? (parseInt(qtyValue.value, 10) || 1) : 1;
+                const cart = getCart();
+                const existing = cart.find(item => item.name === currentProduct.name);
+
+                if (existing) {
+                    existing.quantity = (existing.quantity || 1) + qty;
+                } else {
+                    cart.push({
+                        id: currentProduct.mongoId || currentProduct.id,
+                        name: currentProduct.name,
+                        price: currentProduct.price,
+                        priceNum: currentProduct.priceNum || parsePriceNum(currentProduct.price),
+                        image: currentProduct.image,
+                        specs: currentProduct.specs || currentProduct.category || '18K Gold',
+                        category: currentProduct.category,
+                        quantity: qty
+                    });
+                }
+
+                saveCart(cart);
+                updateCartBadge();
+                showToast(`${qty}x ${currentProduct.name} added to Bag ✓`);
+
+                // Button state animation
+                const origText = addToCartBtn.textContent;
+                addToCartBtn.textContent = 'Added to Bag ✓';
+                addToCartBtn.style.backgroundColor = 'var(--color-gold-dark)';
+                setTimeout(() => {
+                    addToCartBtn.textContent = origText;
+                    addToCartBtn.style.backgroundColor = '';
+                }, 1800);
+            });
+        }
+
+        // 4. Buy Now — Checkout
+        if (buyNowBtn) {
+            buyNowBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (!currentProduct) return;
+
+                const qty = qtyValue ? (parseInt(qtyValue.value, 10) || 1) : 1;
+                const cart = getCart();
+                const existing = cart.find(item => item.name === currentProduct.name);
+
+                if (existing) {
+                    existing.quantity = (existing.quantity || 1) + qty;
+                } else {
+                    cart.push({
+                        id: currentProduct.mongoId || currentProduct.id,
+                        name: currentProduct.name,
+                        price: currentProduct.price,
+                        priceNum: currentProduct.priceNum || parsePriceNum(currentProduct.price),
+                        image: currentProduct.image,
+                        specs: currentProduct.specs || currentProduct.category || '18K Gold',
+                        category: currentProduct.category,
+                        quantity: qty
+                    });
+                }
+
+                saveCart(cart);
+                updateCartBadge();
+
+                const user = api.getUser();
+                const token = api.getToken();
+                if (!user || !token) {
+                    window.location.href = 'login.html?redirect=checkout.html';
+                } else {
+                    window.location.href = 'checkout.html';
+                }
+            });
+        }
+
+        // 5. Gallery Next / Prev Arrows
+        if (galleryPrev) {
+            galleryPrev.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentGalleryImages.length <= 1) return;
+                currentImageIndex = (currentImageIndex - 1 + currentGalleryImages.length) % currentGalleryImages.length;
+                updateGalleryDisplay();
+            });
+        }
+
+        if (galleryNext) {
+            galleryNext.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentGalleryImages.length <= 1) return;
+                currentImageIndex = (currentImageIndex + 1) % currentGalleryImages.length;
+                updateGalleryDisplay();
+            });
+        }
+
+        // 6. Accordions
+        const accordionTriggers = document.querySelectorAll('.accordion-item__trigger');
+        accordionTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const item = trigger.closest('.accordion-item');
+                if (item) {
+                    item.classList.toggle('open');
+                }
+            });
         });
     }
 
-    // Initialize Cart Badge
-    updateCartBadge();
+    /* ---------- Document Ready Initialization ---------- */
+    document.addEventListener('DOMContentLoaded', () => {
+        const initial = getInitialProductFromContext();
+        if (initial) {
+            renderProductUI(initial);
+        }
+        updateCartBadge();
+        initPDPEventListeners();
+        loadDynamicProductData();
+    });
 })();

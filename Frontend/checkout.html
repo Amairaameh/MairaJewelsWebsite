@@ -124,70 +124,114 @@
                         <h2>Contact Information</h2>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="first-name">First Name</label>
-                                <input class="form-input" type="text" id="first-name" placeholder="Maira" required>
+                                <label class="form-label" for="first-name">First Name <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="first-name" placeholder="Enter your first name" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="last-name">Last Name</label>
-                                <input class="form-input" type="text" id="last-name" placeholder="Khan" required>
+                                <label class="form-label" for="last-name">Last Name <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="last-name" placeholder="Enter your last name" required>
                             </div>
-                            <div class="form-group form-group--full">
-                                <label class="form-label" for="email">Email Address</label>
-                                <input class="form-input" type="email" id="email" placeholder="mairajewels.za@gmail.com"
-                                    required>
+                            <div class="form-group">
+                                <label class="form-label" for="phone">Phone Number <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="tel" id="phone" placeholder="Enter your phone number" inputmode="numeric" pattern="[0-9+\s\-]*" required>
                             </div>
-                            <div class="form-group form-group--full">
-                                <label class="form-label" for="phone">Phone Number</label>
-                                <input class="form-input" type="tel" id="phone" placeholder="083 922 8383">
+                            <div class="form-group">
+                                <label class="form-label" for="alt-phone">Alternate Phone Number <span style="font-weight:normal; opacity:0.7;">(Optional)</span></label>
+                                <input class="form-input" type="tel" id="alt-phone" placeholder="Enter alternate phone number" inputmode="numeric" pattern="[0-9+\s\-]*">
                             </div>
 
                             <!-- Divider -->
                             <p class="form-section-title">Shipping Address</p>
 
                             <div class="form-group form-group--full">
-                                <label class="form-label" for="address">Street Address</label>
-                                <input class="form-input" type="text" id="address" placeholder="1 Sandton Drive"
+                                <label class="form-label" for="address">Address <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="address" placeholder="Enter address"
                                     required>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="city">City</label>
-                                <input class="form-input" type="text" id="city" placeholder="Johannesburg" required>
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="apartment">Apartment, Suite, Unit, or Building <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="apartment" placeholder="Enter apartment, suite, or building number" required>
+                            </div>
+                            <div class="form-group form-group--full">
+                                <label class="form-label" for="landmark">Landmark / Nearby Location <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="landmark" placeholder="Enter landmark or nearby location" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="zip">Postal Code</label>
-                                <input class="form-input" type="text" id="zip" placeholder="2196" required>
+                                <label class="form-label" for="city">City <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="city" placeholder="Enter your city" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="zip">Postal Code <span style="color:#c53030;">*</span></label>
+                                <input class="form-input" type="text" id="zip" placeholder="Enter postal code" required>
                             </div>
                             <div class="form-group form-group--full">
                                 <label class="form-label" for="country">Country</label>
-                                <select class="form-select" id="country" required>
-                                    <option value="South Africa" selected>South Africa</option>
-                                    <option>United Arab Emirates</option>
-                                    <option>United Kingdom</option>
-                                    <option>United States</option>
-                                    <option>Australia</option>
-                                    <option>Canada</option>
-                                    <option>India</option>
-                                    <option>Germany</option>
-                                    <option>Other</option>
+                                <select class="form-select" id="country" disabled style="background:#fdfaf6; cursor:not-allowed;">
+                                    <option value="South Africa" selected>South Africa (Domestic Express Courier)</option>
                                 </select>
+                                <span style="font-size:0.72rem; color:var(--color-muted); margin-top:4px; display:block;">
+                                    🚚 Shipping is currently available exclusively within South Africa.
+                                </span>
                             </div>
 
-                            <!-- Divider -->
-                            <p class="form-section-title">Payment Details</p>
+                            <!-- Payment Details Header -->
+                            <p class="form-section-title">Payment Method</p>
 
-                            <div class="form-group form-group--full">
-                                <label class="form-label" for="card-number">Card Number</label>
-                                <input class="form-input" type="text" id="card-number" placeholder="4242 4242 4242 4242"
-                                    maxlength="19" required>
+                            <!-- Payment Options Selection Cards -->
+                            <div class="form-group form-group--full" style="display:flex; flex-direction:column; gap:10px; margin-bottom:1.2rem;">
+                                <label class="payment-option-card payment-option-card--active" id="opt-payfast-label" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border:1px solid #c8a97e; border-radius:3px; background:rgba(200,169,126,0.06); cursor:pointer;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <input type="radio" name="payment-method" id="pay-method-payfast" value="PayFast" checked style="accent-color:#c8a97e; cursor:pointer;">
+                                        <div>
+                                            <strong style="font-size:0.88rem; color:#1c1510; display:block;">PayFast &bull; Credit / Debit Card</strong>
+                                            <span style="font-size:0.75rem; color:var(--color-muted);">Instant 256-bit SSL encrypted online payment</span>
+                                        </div>
+                                    </div>
+                                    <span style="background:#c8a97e; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:2px; letter-spacing:0.05em;">SECURE</span>
+                                </label>
+
+                                <label class="payment-option-card" id="opt-eft-label" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border:1px solid rgba(200,169,126,0.3); border-radius:3px; background:#faf7f2; cursor:pointer;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <input type="radio" name="payment-method" id="pay-method-eft" value="Bank Transfer" style="accent-color:#c8a97e; cursor:pointer;">
+                                        <div>
+                                            <strong style="font-size:0.88rem; color:#1c1510; display:block;">Direct Bank Transfer / Instant EFT</strong>
+                                            <span style="font-size:0.75rem; color:var(--color-muted);">Pay directly from your bank via EFT reference</span>
+                                        </div>
+                                    </div>
+                                    <span style="border:1px solid #c8a97e; color:#b89060; font-size:0.65rem; font-weight:600; padding:2px 8px; border-radius:2px; letter-spacing:0.05em;">EFT</span>
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="expiry">Expiry Date</label>
-                                <input class="form-input" type="text" id="expiry" placeholder="MM / YY" maxlength="7"
-                                    required>
+
+                            <!-- Card Details Panel (Shown when PayFast is selected) -->
+                            <div id="panel-card-details" class="form-grid" style="grid-column: 1 / -1; margin-top:0;">
+                                <div class="form-group form-group--full">
+                                    <label class="form-label" for="card-number">Card Number <span style="color:#c53030;">*</span></label>
+                                    <input class="form-input" type="text" id="card-number" placeholder="Enter 16-digit card number" maxlength="19" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="expiry">Expiry Date <span style="color:#c53030;">*</span></label>
+                                    <input class="form-input" type="text" id="expiry" placeholder="MM / YY" maxlength="7" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="cvv">CVV <span style="color:#c53030;">*</span></label>
+                                    <input class="form-input" type="text" id="cvv" placeholder="CVV" maxlength="4" required>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="cvv">CVV</label>
-                                <input class="form-input" type="text" id="cvv" placeholder="123" maxlength="4" required>
+
+                            <!-- Bank Transfer Details Panel (Hidden by default) -->
+                            <div id="panel-eft-details" style="display:none; grid-column: 1 / -1; background:#fdfaf6; border:1px solid rgba(200,169,126,0.35); padding:16px; border-radius:3px;">
+                                <div style="font-size:0.82rem; color:#1c1510; line-height:1.6;">
+                                    <strong style="color:var(--color-gold-dark); font-size:0.88rem; display:block; margin-bottom:8px;">🏦 Official Bank Transfer Details</strong>
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:0.8rem; border-top:1px solid rgba(200,169,126,0.2); padding-top:8px;">
+                                        <div><strong>Bank:</strong> First National Bank (FNB)</div>
+                                        <div><strong>Account Name:</strong> Maira Jewels (Pty) Ltd</div>
+                                        <div><strong>Account No:</strong> 6284 9201 441</div>
+                                        <div><strong>Branch Code:</strong> 250655</div>
+                                    </div>
+                                    <p style="margin-top:10px; font-size:0.75rem; color:var(--color-muted); font-style:italic;">
+                                        💡 Please use your <strong>Order Reference Number</strong> as your payment reference. Your order will be dispatched immediately upon payment confirmation.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 

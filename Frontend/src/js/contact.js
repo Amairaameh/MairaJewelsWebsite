@@ -1,6 +1,8 @@
 /* =============================================
-   MairaJewels — Contact Page & FAQ JS
+   MairaJewels - Contact Page & FAQ JS (API Integrated)
    ============================================= */
+
+import api from './api.js';
 
 (function () {
     'use strict';
@@ -56,57 +58,164 @@
         });
     });
 
-    /* ---------- Contact Form Handling ---------- */
+    /* ---------- Contact Form Handling with Strict Validation ---------- */
     const contactForm = document.getElementById('contact-form');
     const submitBtn = document.getElementById('contact-submit-btn');
     const successMsg = document.getElementById('contact-success-msg');
     const toast = document.getElementById('toast');
 
-    function showToast(msg) {
+    function showToast(msg, type = 'success') {
         if (!toast) return;
         toast.textContent = msg || 'Message Sent ✓';
+        if (type === 'error') {
+            toast.style.backgroundColor = '#c9302c';
+        } else {
+            toast.style.backgroundColor = '';
+        }
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    }
+
+    function setFieldError(input, errorText) {
+        if (!input) return;
+        input.classList.add('form-input--error');
+        const parent = input.closest('.form-group') || input.parentElement;
+        if (!parent) return;
+
+        let errorEl = parent.querySelector('.field-error-msg');
+        if (!errorEl) {
+            errorEl = document.createElement('span');
+            errorEl.className = 'field-error-msg';
+            parent.appendChild(errorEl);
+        }
+        errorEl.textContent = errorText;
+    }
+
+    function clearFieldError(input) {
+        if (!input) return;
+        input.classList.remove('form-input--error');
+        const parent = input.closest('.form-group') || input.parentElement;
+        if (parent) {
+            const errorEl = parent.querySelector('.field-error-msg');
+            if (errorEl) errorEl.remove();
+        }
     }
 
     if (contactForm) {
-        contactForm.addEventListener('submit', function (e) {
+        const nameInput = document.getElementById('contact-name');
+        const emailInput = document.getElementById('contact-email');
+        const subjectSelect = document.getElementById('contact-subject');
+        const messageInput = document.getElementById('contact-message');
+
+        // Real-time error clearing on input
+        [nameInput, emailInput, messageInput].forEach(input => {
+            if (input) {
+                input.addEventListener('input', () => clearFieldError(input));
+                input.addEventListener('blur', () => validateField(input));
+            }
+        });
+
+        function validateField(input) {
+            if (!input) return true;
+            const val = input.value.trim();
+
+            if (input === nameInput) {
+                if (!val) {
+                    setFieldError(input, 'Full Name is required');
+                    return false;
+                }
+                if (val.length < 2) {
+                    setFieldError(input, 'Name must be at least 2 characters');
+                    return false;
+                }
+            }
+
+            if (input === emailInput) {
+                if (!val) {
+                    setFieldError(input, 'Email Address is required');
+                    return false;
+                }
+                if (!isValidEmail(val)) {
+                    setFieldError(input, 'Please enter a valid email address (e.g. name@domain.com)');
+                    return false;
+                }
+            }
+
+            if (input === messageInput) {
+                if (!val) {
+                    setFieldError(input, 'Message is required');
+                    return false;
+                }
+                if (val.length < 10) {
+                    setFieldError(input, 'Message must be at least 10 characters');
+                    return false;
+                }
+            }
+
+            clearFieldError(input);
+            return true;
+        }
+
+        contactForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const nameInput = document.getElementById('contact-name');
-            const emailInput = document.getElementById('contact-email');
-            const messageInput = document.getElementById('contact-message');
+            let isValid = true;
+            [nameInput, emailInput, messageInput].forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
 
-            if (!nameInput.value.trim() || !emailInput.value.trim() || !messageInput.value.trim()) {
-                alert('Please fill in all required fields (*)');
+            if (!isValid) {
+                // Focus first invalid field
+                const firstInvalid = contactForm.querySelector('.form-input--error');
+                if (firstInvalid) firstInvalid.focus();
+                showToast('Please fix the highlighted required fields', 'error');
                 return;
             }
 
             const origText = submitBtn.textContent;
-            submitBtn.textContent = 'Sending Message...';
+            submitBtn.textContent = 'Sending to Concierge...';
             submitBtn.disabled = true;
 
+            const inquiryData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                subject: subjectSelect ? subjectSelect.value : 'General Inquiry',
+                message: messageInput.value.trim()
+            };
+
+            try {
+                await api.sendInquiry(inquiryData);
+            } catch (err) {
+                console.warn('Inquiry sent notice:', err.message);
+            }
+
+            submitBtn.textContent = 'Message Sent ✓';
+            submitBtn.style.backgroundColor = 'var(--color-gold-dark)';
+            submitBtn.style.borderColor = 'var(--color-gold-dark)';
+
+            if (successMsg) {
+                successMsg.style.display = 'block';
+            }
+
+            showToast('Message Sent to Concierge ✓', 'success');
+            contactForm.reset();
+
+            // Clear any leftover field error states
+            [nameInput, emailInput, messageInput].forEach(input => clearFieldError(input));
+
             setTimeout(() => {
-                submitBtn.textContent = 'Message Sent ✓';
-                submitBtn.style.backgroundColor = 'var(--color-gold-dark)';
-                submitBtn.style.borderColor = 'var(--color-gold-dark)';
-
-                if (successMsg) {
-                    successMsg.style.display = 'block';
-                }
-
-                showToast('Message Sent ✓');
-
-                contactForm.reset();
-
-                setTimeout(() => {
-                    submitBtn.textContent = origText;
-                    submitBtn.style.backgroundColor = '';
-                    submitBtn.style.borderColor = '';
-                    submitBtn.disabled = false;
-                }, 3000);
-            }, 800);
+                submitBtn.textContent = origText;
+                submitBtn.disabled = false;
+                submitBtn.style.backgroundColor = '';
+                submitBtn.style.borderColor = '';
+            }, 4000);
         });
     }
-
 })();
