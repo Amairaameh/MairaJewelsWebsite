@@ -79,6 +79,62 @@ import api from './api.js';
         cartLink.setAttribute('href', 'cart.html');
     }
 
+    /* ---------- Mobile Navigation & Drawer Toggle ---------- */
+    function initMobileNav() {
+        const mobileNavToggle = document.getElementById('mobileNavToggle');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const mobileDrawerClose = document.getElementById('mobileDrawerClose');
+
+        function openMobileNav() {
+            if (mobileDrawer) mobileDrawer.classList.add('is-open');
+            if (mobileOverlay) mobileOverlay.classList.add('is-open');
+            if (mobileNavToggle) mobileNavToggle.classList.add('is-active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileNav() {
+            if (mobileDrawer) mobileDrawer.classList.remove('is-open');
+            if (mobileOverlay) mobileOverlay.classList.remove('is-open');
+            if (mobileNavToggle) mobileNavToggle.classList.remove('is-active');
+            document.body.style.overflow = '';
+        }
+
+        if (mobileNavToggle) {
+            mobileNavToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mobileDrawer && mobileDrawer.classList.contains('is-open')) {
+                    closeMobileNav();
+                } else {
+                    openMobileNav();
+                }
+            });
+        }
+
+        if (mobileDrawerClose) {
+            mobileDrawerClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeMobileNav();
+            });
+        }
+
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                closeMobileNav();
+            });
+        }
+
+        if (mobileDrawer) {
+            mobileDrawer.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    closeMobileNav();
+                });
+            });
+        }
+    }
+
+    initMobileNav();
+
     /* ---------- Card Click Navigation on Homepage ---------- */
     function bindCardNavigation() {
         const allCards = document.querySelectorAll('.diamond-card, .product-card');
