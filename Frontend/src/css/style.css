@@ -617,6 +617,13 @@ img {
     z-index: 2;
 }
 
+.product-card__badge--out-of-stock {
+    background-color: rgba(229, 62, 62, 0.95) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
+}
+
 .product-card__body {
     padding: 1.35rem 1.25rem 1.35rem;
     display: flex;

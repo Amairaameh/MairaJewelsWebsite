@@ -125,6 +125,11 @@ import api from './api.js';
                     const primaryImg = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
                     const allThumbs = (p.images && p.images.length > 0) ? p.images : (p.thumbs || [primaryImg]);
 
+                    const isOutOfStock = (p.inStock === false) ||
+                                         (typeof p.stock === 'number' && p.stock <= 0) ||
+                                         (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
+                                         (typeof p.stockQty === 'number' && p.stockQty <= 0);
+
                     return {
                         id: p._id || p.customId,
                         mongoId: p._id,
@@ -136,6 +141,9 @@ import api from './api.js';
                         gem: p.gem || 'Diamond',
                         specs: p.specs || `${p.metal || ''} ${p.gem ? '• ' + p.gem : ''}`.trim(),
                         badge: p.badge || '',
+                        isOutOfStock,
+                        inStock: !isOutOfStock,
+                        stock: typeof p.stock === 'number' ? p.stock : (typeof p.countInStock === 'number' ? p.countInStock : 10),
                         image: primaryImg,
                         thumbs: allThumbs,
                         description: p.description || ''
@@ -253,9 +261,18 @@ import api from './api.js';
             const card = document.createElement('article');
             card.className = 'product-card';
             card.style.cursor = 'pointer';
+
+            const badgeHtml = item.isOutOfStock
+                ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
+                : (item.badge ? `<span class="product-card__badge">${item.badge}</span>` : '');
+
+            const buttonHtml = item.isOutOfStock
+                ? `<button class="btn btn--small btn--outline add-to-cart-btn" disabled style="opacity:0.55; cursor:not-allowed; border-color:var(--color-border); color:var(--color-muted);">Out of Stock</button>`
+                : `<button class="btn btn--small btn--outline add-to-cart-btn" data-id="${item.id}" aria-label="Add to Bag">Add to Bag</button>`;
+
             card.innerHTML = `
                 <div class="product-card__image">
-                    ${item.badge ? `<span class="product-card__badge">${item.badge}</span>` : ''}
+                    ${badgeHtml}
                     <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'">
                 </div>
                 <div class="product-card__body">
@@ -263,7 +280,7 @@ import api from './api.js';
                     <p class="product-card__type">${item.specs || item.category || ''}</p>
                     <div class="product-card__footer">
                         <span class="product-card__price">${item.price}</span>
-                        <button class="btn btn--small btn--outline add-to-cart-btn" data-id="${item.id}" aria-label="Add to Bag">Add to Bag</button>
+                        ${buttonHtml}
                     </div>
                 </div>
             `;
@@ -277,7 +294,9 @@ import api from './api.js';
                     price: item.price,
                     priceNum: item.priceNum,
                     category: item.category,
-                    specs: item.specs,
+                    isOutOfStock: item.isOutOfStock,
+                    inStock: item.inStock,
+                    stock: item.stock,
                     image: item.image,
                     thumbs: item.thumbs,
                     description: item.description
@@ -293,6 +312,10 @@ import api from './api.js';
             if (addBtn) {
                 addBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    if (item.isOutOfStock) {
+                        showToast(`Sorry, ${item.name} is currently out of stock.`);
+                        return;
+                    }
                     const cart = getCart();
                     const existing = cart.find(ci => ci.name === item.name);
                     if (existing) {

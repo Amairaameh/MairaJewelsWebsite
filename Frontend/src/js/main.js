@@ -234,11 +234,18 @@ import api from './api.js';
                     if (imgSrc.startsWith('/uploads/')) {
                         imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
                     }
-                    const specsStr = p.specs || `${p.metal || '18K Gold'}${p.gem ? ' • ' + p.gem : ''}`;
+                    const isOutOfStock = (p.inStock === false) ||
+                                         (typeof p.stock === 'number' && p.stock <= 0) ||
+                                         (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
+                                         (typeof p.stockQty === 'number' && p.stockQty <= 0);
+                    const badgeHtml = isOutOfStock
+                        ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
+                        : '';
 
                     return `
-                        <article class="diamond-card" data-id="${p._id || p.customId || ''}">
+                        <article class="diamond-card" data-id="${p._id || p.customId || ''}" data-out-of-stock="${isOutOfStock}">
                             <div class="diamond-card__image-wrapper">
+                                ${badgeHtml}
                                 <img src="${imgSrc}" alt="${p.name}" loading="lazy" class="arch-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                             </div>
                             <div class="diamond-card__details">
@@ -289,11 +296,20 @@ import api from './api.js';
                         if (imgSrc.startsWith('/uploads/')) {
                             imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
                         }
+                        const isOutOfStock = (p.inStock === false) ||
+                                             (typeof p.stock === 'number' && p.stock <= 0) ||
+                                             (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
+                                             (typeof p.stockQty === 'number' && p.stockQty <= 0);
                         const specsStr = p.specs || `${p.category || 'Fine Jewellery'} ${p.metal ? '· ' + p.metal : ''}`.trim();
-                        const badgeHtml = p.badge ? `<span class="product-card__badge">${p.badge}</span>` : '';
+                        const badgeHtml = isOutOfStock
+                            ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
+                            : (p.badge ? `<span class="product-card__badge">${p.badge}</span>` : '');
+                        const buttonHtml = isOutOfStock
+                            ? `<button class="btn btn--small btn--primary add-to-cart" disabled style="opacity:0.55; cursor:not-allowed; background:#888;">Out of Stock</button>`
+                            : `<button class="btn btn--small btn--primary add-to-cart">Add to Cart</button>`;
 
                         return `
-                            <article class="product-card" data-id="${p._id || p.customId}">
+                            <article class="product-card" data-id="${p._id || p.customId}" data-out-of-stock="${isOutOfStock}">
                                 <div class="product-card__image">
                                     <img src="${imgSrc}" alt="${p.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                                     ${badgeHtml}
@@ -303,7 +319,7 @@ import api from './api.js';
                                     <p class="product-card__type">${specsStr}</p>
                                     <div class="product-card__footer">
                                         <span class="product-card__price">${priceStr}</span>
-                                        <button class="btn btn--small btn--primary add-to-cart">Add to Cart</button>
+                                        ${buttonHtml}
                                     </div>
                                 </div>
                             </article>

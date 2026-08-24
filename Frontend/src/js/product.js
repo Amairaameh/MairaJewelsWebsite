@@ -138,6 +138,13 @@ import api from './api.js';
         if (productCategory) productCategory.textContent = p.category || 'Fine Jewellery';
         if (productName) productName.textContent = p.name;
         
+        const isOutOfStock = (p.inStock === false) ||
+                             (typeof p.stock === 'number' && p.stock <= 0) ||
+                             (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
+                             (typeof p.stockQty === 'number' && p.stockQty <= 0) ||
+                             (p.isOutOfStock === true);
+        p.isOutOfStock = isOutOfStock;
+
         const displayPrice = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R'))) 
             ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price) 
             : formatPrice(p.priceNum || parsePriceNum(p.price));
@@ -173,12 +180,60 @@ import api from './api.js';
                 chips.push('18K Gold Plated', 'Hypoallergenic', 'Tarnish Free');
             }
 
+            if (isOutOfStock) {
+                const outChip = document.createElement('span');
+                outChip.className = 'chip';
+                outChip.style.cssText = 'background:#e53e3e; color:#ffffff; font-weight:700; border-color:#e53e3e;';
+                outChip.textContent = 'OUT OF STOCK';
+                productChips.appendChild(outChip);
+            } else {
+                const inChip = document.createElement('span');
+                inChip.className = 'chip';
+                inChip.style.cssText = 'background:#27ae60; color:#ffffff; font-weight:600; border-color:#27ae60;';
+                inChip.textContent = 'IN STOCK';
+                productChips.appendChild(inChip);
+            }
+
             chips.forEach(chipText => {
                 const chip = document.createElement('span');
                 chip.className = 'chip';
                 chip.textContent = chipText.toUpperCase();
                 productChips.appendChild(chip);
             });
+        }
+
+        // Configure PDP buttons & controls based on stock
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        const buyNowBtn = document.getElementById('buy-now-btn');
+        const qtyMinus = document.getElementById('qty-minus');
+        const qtyPlus = document.getElementById('qty-plus');
+
+        if (isOutOfStock) {
+            if (addToCartBtn) {
+                addToCartBtn.textContent = 'Out of Stock';
+                addToCartBtn.disabled = true;
+                addToCartBtn.style.cssText = 'opacity:0.55; cursor:not-allowed; background:#888; border-color:#888; color:#fff;';
+            }
+            if (buyNowBtn) {
+                buyNowBtn.textContent = 'Out of Stock';
+                buyNowBtn.disabled = true;
+                buyNowBtn.style.cssText = 'opacity:0.55; cursor:not-allowed; background:transparent; border-color:#ccc; color:#888;';
+            }
+            if (qtyMinus) qtyMinus.disabled = true;
+            if (qtyPlus) qtyPlus.disabled = true;
+        } else {
+            if (addToCartBtn) {
+                addToCartBtn.textContent = 'Add to Bag';
+                addToCartBtn.disabled = false;
+                addToCartBtn.style.cssText = '';
+            }
+            if (buyNowBtn) {
+                buyNowBtn.textContent = 'Buy Now — Checkout';
+                buyNowBtn.disabled = false;
+                buyNowBtn.style.cssText = '';
+            }
+            if (qtyMinus) qtyMinus.disabled = false;
+            if (qtyPlus) qtyPlus.disabled = false;
         }
 
         // Gallery Images Setup
@@ -267,6 +322,10 @@ import api from './api.js';
 
         if (loadedProduct) {
             const p = loadedProduct;
+            const isOutOfStock = (p.inStock === false) ||
+                                 (typeof p.stock === 'number' && p.stock <= 0) ||
+                                 (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
+                                 (typeof p.stockQty === 'number' && p.stockQty <= 0);
             const normalized = {
                 id: p._id || p.customId,
                 mongoId: p._id,
@@ -276,6 +335,9 @@ import api from './api.js';
                 category: p.category,
                 metal: p.metal,
                 gem: p.gem,
+                isOutOfStock,
+                inStock: !isOutOfStock,
+                stock: typeof p.stock === 'number' ? p.stock : (typeof p.countInStock === 'number' ? p.countInStock : 10),
                 specs: p.specs || `${p.metal || ''} ${p.gem ? '• ' + p.gem : ''}`.trim(),
                 image: p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
                 images: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),
@@ -310,11 +372,17 @@ import api from './api.js';
                     related.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'related-card';
+                        const itemIsOut = (item.inStock === false) ||
+                                          (typeof item.stock === 'number' && item.stock <= 0) ||
+                                          (typeof item.countInStock === 'number' && item.countInStock <= 0) ||
+                                          (typeof item.stockQty === 'number' && item.stockQty <= 0);
                         const itemPrice = item.price ? (item.price.startsWith('$') ? 'R ' + item.price.slice(1).trim() : item.price) : `R ${item.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                         const itemImg = item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
+                        const badgeHtml = itemIsOut ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>` : '';
 
                         card.innerHTML = `
-                            <div class="related-card__image">
+                            <div class="related-card__image" style="position:relative;">
+                                ${badgeHtml}
                                 <img src="${itemImg}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                             </div>
                             <div class="related-card__body">
@@ -389,6 +457,10 @@ import api from './api.js';
             addToCartBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (!currentProduct) return;
+                if (currentProduct.isOutOfStock) {
+                    showToast(`Sorry, ${currentProduct.name} is currently out of stock.`);
+                    return;
+                }
 
                 const qty = qtyValue ? (parseInt(qtyValue.value, 10) || 1) : 1;
                 const cart = getCart();
@@ -429,6 +501,10 @@ import api from './api.js';
             buyNowBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (!currentProduct) return;
+                if (currentProduct.isOutOfStock) {
+                    showToast(`Sorry, ${currentProduct.name} is currently out of stock.`);
+                    return;
+                }
 
                 const qty = qtyValue ? (parseInt(qtyValue.value, 10) || 1) : 1;
                 const cart = getCart();

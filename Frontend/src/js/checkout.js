@@ -484,6 +484,8 @@ import api from './api.js';
 
             let generatedOrderNumber = `MJ-${Date.now().toString().slice(-6)}`;
             let backendOrderId = null;
+            let orderApiFailed = false;
+            let stockErrorMessage = '';
 
             try {
                 const res = await api.createOrder(orderPayload);
@@ -492,7 +494,19 @@ import api from './api.js';
                     if (res.data.order._id) backendOrderId = res.data.order._id;
                 }
             } catch (err) {
-                console.warn('Order recorded locally (backend sync notice):', err.message);
+                console.error('Order creation API error:', err.message);
+                orderApiFailed = true;
+                stockErrorMessage = err.message || 'Unable to place order due to stock constraints. Please review item availability.';
+            }
+
+            if (orderApiFailed) {
+                showFormError(stockErrorMessage);
+                const placeOrderBtn = document.getElementById('place-order-btn') || document.querySelector('button[type="submit"]');
+                if (placeOrderBtn) {
+                    placeOrderBtn.disabled = false;
+                    placeOrderBtn.innerHTML = 'Place Order';
+                }
+                return;
             }
 
             // Dual-Sync to Admin Panel Storage (maira_admin_orders & maira_admin_customers)
