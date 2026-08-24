@@ -512,7 +512,7 @@ import api from './api.js';
                     });
                     const statusClass = order.status === 'Delivered' ? 'color:#27ae60;' : order.status === 'Cancelled' ? 'color:#e53e3e;' : 'color:var(--color-gold-dark);';
                     const itemsCount = (order.items || []).reduce((acc, i) => acc + (i.quantity || 1), 0);
-                    const totalStr = 'R ' + Number(order.totalAmount || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2 });
+                    const totalStr = 'R ' + Number(order.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
                     return `
                         <div style="border: 1px solid var(--color-border); padding: 1rem 1.25rem; margin-bottom: 0.85rem; background: var(--color-white); border-radius: 2px;">

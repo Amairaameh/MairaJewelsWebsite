@@ -19,14 +19,22 @@ import api from './api.js';
         localStorage.removeItem('maira_cart');
     }
 
-    function parsePrice(priceStr) {
-        if (!priceStr) return 0;
-        const cleaned = String(priceStr).replace(/[^0-9.]/g, '');
+    function parsePrice(priceVal) {
+        if (typeof priceVal === 'number') return priceVal;
+        if (!priceVal) return 0;
+        let s = String(priceVal).trim();
+        if (s.includes(',') && s.includes('.')) {
+            s = s.replace(/,/g, '');
+        } else if (s.includes(',')) {
+            s = s.replace(',', '.');
+        }
+        const cleaned = s.replace(/[^0-9.]/g, '');
         return parseFloat(cleaned) || 0;
     }
 
     function formatPrice(val) {
-        return 'R ' + val.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const num = (typeof val === 'number' && !isNaN(val)) ? val : parseFloat(val) || 0;
+        return 'R ' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function renderCheckoutSummary() {

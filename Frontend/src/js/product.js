@@ -52,12 +52,19 @@ import api from './api.js';
     function parsePriceNum(priceVal) {
         if (typeof priceVal === 'number') return priceVal;
         if (!priceVal) return 0;
-        const cleaned = String(priceVal).replace(/[^0-9.]/g, '');
+        let s = String(priceVal).trim();
+        if (s.includes(',') && s.includes('.')) {
+            s = s.replace(/,/g, '');
+        } else if (s.includes(',')) {
+            s = s.replace(',', '.');
+        }
+        const cleaned = s.replace(/[^0-9.]/g, '');
         return parseFloat(cleaned) || 0;
     }
 
     function formatPrice(val) {
-        return 'R ' + val.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const num = (typeof val === 'number' && !isNaN(val)) ? val : parseFloat(val) || 0;
+        return 'R ' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     /* ---------- Initial URL / Storage Extraction ---------- */
@@ -264,7 +271,7 @@ import api from './api.js';
                 id: p._id || p.customId,
                 mongoId: p._id,
                 name: p.name,
-                price: p.price ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price) : `R ${p.priceNum?.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`,
+                price: p.price ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price) : `R ${p.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
                 priceNum: p.priceNum || parsePriceNum(p.price),
                 category: p.category,
                 metal: p.metal,
@@ -303,7 +310,7 @@ import api from './api.js';
                     related.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'related-card';
-                        const itemPrice = item.price ? (item.price.startsWith('$') ? 'R ' + item.price.slice(1).trim() : item.price) : `R ${item.priceNum?.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
+                        const itemPrice = item.price ? (item.price.startsWith('$') ? 'R ' + item.price.slice(1).trim() : item.price) : `R ${item.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                         const itemImg = item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
 
                         card.innerHTML = `

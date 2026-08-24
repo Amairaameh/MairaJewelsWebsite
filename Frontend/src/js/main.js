@@ -229,7 +229,7 @@ import api from './api.js';
                 gridContainer.innerHTML = itemsToDisplay.map(p => {
                     let priceStr = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                         ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
-                        : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}` : 'R 448.00');
+                        : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'R 448.00');
                     let imgSrc = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
                     if (imgSrc.startsWith('/uploads/')) {
                         imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
@@ -284,7 +284,7 @@ import api from './api.js';
                     craftedGrid.innerHTML = allProducts.map(p => {
                         let priceStr = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                             ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
-                            : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}` : 'R 448.00');
+                            : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'R 448.00');
                         let imgSrc = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
                         if (imgSrc.startsWith('/uploads/')) {
                             imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;

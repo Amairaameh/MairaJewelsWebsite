@@ -56,7 +56,13 @@ import api from './api.js';
     function parsePriceNum(val) {
         if (typeof val === 'number') return val;
         if (!val) return 0;
-        const cleaned = String(val).replace(/[^0-9.]/g, '');
+        let s = String(val).trim();
+        if (s.includes(',') && s.includes('.')) {
+            s = s.replace(/,/g, '');
+        } else if (s.includes(',')) {
+            s = s.replace(',', '.');
+        }
+        const cleaned = s.replace(/[^0-9.]/g, '');
         return parseFloat(cleaned) || 0;
     }
 
@@ -113,7 +119,7 @@ import api from './api.js';
                 liveCatalogItems = res.data.products.map(p => {
                     const priceFormatted = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                         ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
-                        : `R ${(p.priceNum || parsePriceNum(p.price) || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
+                        : `R ${(p.priceNum || parsePriceNum(p.price) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                     
                     const priceNumber = p.priceNum || parsePriceNum(p.price) || 0;
                     const primaryImg = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
