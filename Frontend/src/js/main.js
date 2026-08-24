@@ -238,6 +238,7 @@ import api from './api.js';
                                          (typeof p.stock === 'number' && p.stock <= 0) ||
                                          (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
                                          (typeof p.stockQty === 'number' && p.stockQty <= 0);
+                    const specsStr = p.specs || `${p.metal || '18K Gold'}${p.gem ? ' • ' + p.gem : ''}`;
                     const badgeHtml = isOutOfStock
                         ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
                         : '';
