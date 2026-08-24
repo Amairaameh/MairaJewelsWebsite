@@ -57,7 +57,7 @@ import api from './api.js';
     }
 
     function formatPrice(val) {
-        return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return 'R ' + val.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     /* ---------- Initial URL / Storage Extraction ---------- */
@@ -87,7 +87,7 @@ import api from './api.js';
                 id: urlId || 'prod-' + Date.now(),
                 mongoId: urlId,
                 name: decodeURIComponent(urlName),
-                price: urlPrice ? decodeURIComponent(urlPrice) : '$448.00',
+                price: urlPrice ? (urlPrice.startsWith('$') ? 'R ' + decodeURIComponent(urlPrice).slice(1).trim() : decodeURIComponent(urlPrice)) : 'R 448.00',
                 priceNum: parsePriceNum(urlPrice || 448),
                 image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
                 specs: urlSpecs ? decodeURIComponent(urlSpecs) : '18K Gold',
@@ -131,8 +131,8 @@ import api from './api.js';
         if (productCategory) productCategory.textContent = p.category || 'Fine Jewellery';
         if (productName) productName.textContent = p.name;
         
-        const displayPrice = (typeof p.price === 'string' && p.price.startsWith('$')) 
-            ? p.price 
+        const displayPrice = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R'))) 
+            ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price) 
             : formatPrice(p.priceNum || parsePriceNum(p.price));
         if (productPrice) productPrice.textContent = displayPrice;
 
@@ -264,7 +264,7 @@ import api from './api.js';
                 id: p._id || p.customId,
                 mongoId: p._id,
                 name: p.name,
-                price: p.price || `$${p.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                price: p.price ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price) : `R ${p.priceNum?.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`,
                 priceNum: p.priceNum || parsePriceNum(p.price),
                 category: p.category,
                 metal: p.metal,
@@ -303,7 +303,7 @@ import api from './api.js';
                     related.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'related-card';
-                        const itemPrice = item.price || `$${item.priceNum?.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                        const itemPrice = item.price ? (item.price.startsWith('$') ? 'R ' + item.price.slice(1).trim() : item.price) : `R ${item.priceNum?.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
                         const itemImg = item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
 
                         card.innerHTML = `

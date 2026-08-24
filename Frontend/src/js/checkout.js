@@ -26,7 +26,7 @@ import api from './api.js';
     }
 
     function formatPrice(val) {
-        return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return 'R ' + val.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function renderCheckoutSummary() {
@@ -43,8 +43,8 @@ import api from './api.js';
             if (itemsList) {
                 itemsList.innerHTML = '<p style="color:var(--color-muted); font-size:0.9rem;">No items in cart.</p>';
             }
-            if (subtotalEl) subtotalEl.textContent = '$0.00';
-            if (totalEl) totalEl.textContent = '$0.00';
+            if (subtotalEl) subtotalEl.textContent = 'R 0.00';
+            if (totalEl) totalEl.textContent = 'R 0.00';
             return;
         }
 

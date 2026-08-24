@@ -111,9 +111,9 @@ import api from './api.js';
             const res = await api.getProducts({ limit: 200 });
             if (res.data && Array.isArray(res.data.products)) {
                 liveCatalogItems = res.data.products.map(p => {
-                    const priceFormatted = (typeof p.price === 'string' && p.price.startsWith('$'))
-                        ? p.price
-                        : `$${(p.priceNum || parsePriceNum(p.price) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                    const priceFormatted = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
+                        ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
+                        : `R ${(p.priceNum || parsePriceNum(p.price) || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
                     
                     const priceNumber = p.priceNum || parsePriceNum(p.price) || 0;
                     const primaryImg = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';

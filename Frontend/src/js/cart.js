@@ -26,7 +26,7 @@ import api from './api.js';
     }
 
     function formatPrice(val) {
-        return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return 'R ' + val.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function renderCart() {
