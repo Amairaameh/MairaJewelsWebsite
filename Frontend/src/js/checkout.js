@@ -358,10 +358,8 @@ import api from './api.js';
                 if (!val) { setFieldError(fieldId, 'Please enter your address.'); return false; }
                 break;
             case 'apartment':
-                if (!val) { setFieldError(fieldId, 'Please enter your apartment, suite, unit, or building number.'); return false; }
                 break;
             case 'landmark':
-                if (!val) { setFieldError(fieldId, 'Please enter a nearby landmark or location.'); return false; }
                 break;
             case 'city':
                 if (!val) { setFieldError(fieldId, 'Please enter your city.'); return false; }
