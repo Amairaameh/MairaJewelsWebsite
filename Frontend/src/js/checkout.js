@@ -258,6 +258,29 @@ import api from './api.js';
         allFieldIds.forEach(id => clearFieldError(id));
     }
 
+    function showFormError(msg) {
+        let errBanner = document.getElementById('checkout-global-error-banner');
+        const form = document.getElementById('checkout-form');
+        if (!errBanner && form) {
+            errBanner = document.createElement('div');
+            errBanner.id = 'checkout-global-error-banner';
+            errBanner.style.cssText = 'background:#fff5f5; border:1px solid #feb2b2; color:#c53030; padding:12px 16px; border-radius:4px; font-size:0.85rem; margin-bottom:1rem; text-align:center; font-weight:500;';
+            form.prepend(errBanner);
+        }
+        if (errBanner) {
+            errBanner.textContent = msg;
+            errBanner.style.display = 'block';
+            errBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            alert(msg);
+        }
+    }
+
+    function clearGlobalError() {
+        const errBanner = document.getElementById('checkout-global-error-banner');
+        if (errBanner) errBanner.style.display = 'none';
+    }
+
     // Payment Method Selection Toggle
     const radioPayFast = document.getElementById('pay-method-payfast');
     const radioEFT = document.getElementById('pay-method-eft');
@@ -414,6 +437,7 @@ import api from './api.js';
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
             clearAllFieldErrors();
+            clearGlobalError();
 
             const cart = getCart();
             if (cart.length === 0) {
@@ -492,6 +516,12 @@ import api from './api.js';
 
             const fullStreetAddress = [street, apartment, landmark ? `(Landmark: ${landmark})` : ''].filter(Boolean).join(', ');
 
+            const selectedMethod = getSelectedPaymentMethodName();
+            let backendPaymentMethod = selectedMethod;
+            if (selectedMethod.includes('WhatsApp') || selectedMethod.includes('Manual')) {
+                backendPaymentMethod = 'Bank Transfer';
+            }
+
             const orderPayload = {
                 customer: {
                     name: `${firstName} ${lastName}`.trim(),
@@ -503,18 +533,19 @@ import api from './api.js';
                 shippingAddress: {
                     street: fullStreetAddress,
                     address: street,
-                    apartment,
-                    building: apartment,
-                    landmark,
-                    city,
+                    apartment: apartment || '',
+                    building: apartment || '',
+                    landmark: landmark || '',
+                    city: city,
                     state: '',
-                    zip,
+                    zip: zip,
+                    postalCode: zip,
                     country: 'South Africa'
                 },
                 items,
                 subtotal,
                 shippingFee: 0,
-                paymentMethod: getSelectedPaymentMethodName()
+                paymentMethod: backendPaymentMethod
             };
 
             let generatedOrderNumber = `MJ-${Date.now().toString().slice(-6)}`;
