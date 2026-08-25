@@ -261,15 +261,19 @@ import api from './api.js';
     // Payment Method Selection Toggle
     const radioPayFast = document.getElementById('pay-method-payfast');
     const radioEFT = document.getElementById('pay-method-eft');
+    const radioWhatsApp = document.getElementById('pay-method-whatsapp');
     const panelCardDetails = document.getElementById('panel-card-details');
     const panelEFTDetails = document.getElementById('panel-eft-details');
+    const panelWhatsAppDetails = document.getElementById('panel-whatsapp-details');
     const labelPayFast = document.getElementById('opt-payfast-label');
     const labelEFT = document.getElementById('opt-eft-label');
+    const labelWhatsApp = document.getElementById('opt-whatsapp-label');
 
     function updatePaymentMethodUI() {
         if (radioPayFast && radioPayFast.checked) {
             if (panelCardDetails) panelCardDetails.style.display = 'grid';
             if (panelEFTDetails) panelEFTDetails.style.display = 'none';
+            if (panelWhatsAppDetails) panelWhatsAppDetails.style.display = 'none';
             if (labelPayFast) {
                 labelPayFast.style.borderColor = '#c8a97e';
                 labelPayFast.style.background = 'rgba(200,169,126,0.06)';
@@ -278,9 +282,14 @@ import api from './api.js';
                 labelEFT.style.borderColor = 'rgba(200,169,126,0.3)';
                 labelEFT.style.background = '#faf7f2';
             }
+            if (labelWhatsApp) {
+                labelWhatsApp.style.borderColor = 'rgba(200,169,126,0.3)';
+                labelWhatsApp.style.background = '#faf7f2';
+            }
         } else if (radioEFT && radioEFT.checked) {
             if (panelCardDetails) panelCardDetails.style.display = 'none';
             if (panelEFTDetails) panelEFTDetails.style.display = 'block';
+            if (panelWhatsAppDetails) panelWhatsAppDetails.style.display = 'none';
             if (labelEFT) {
                 labelEFT.style.borderColor = '#c8a97e';
                 labelEFT.style.background = 'rgba(200,169,126,0.06)';
@@ -289,19 +298,46 @@ import api from './api.js';
                 labelPayFast.style.borderColor = 'rgba(200,169,126,0.3)';
                 labelPayFast.style.background = '#faf7f2';
             }
-            // Clear any lingering card errors if switching to EFT
+            if (labelWhatsApp) {
+                labelWhatsApp.style.borderColor = 'rgba(200,169,126,0.3)';
+                labelWhatsApp.style.background = '#faf7f2';
+            }
+            ['card-number', 'expiry', 'cvv'].forEach(id => clearFieldError(id));
+        } else if (radioWhatsApp && radioWhatsApp.checked) {
+            if (panelCardDetails) panelCardDetails.style.display = 'none';
+            if (panelEFTDetails) panelEFTDetails.style.display = 'none';
+            if (panelWhatsAppDetails) panelWhatsAppDetails.style.display = 'block';
+            if (labelWhatsApp) {
+                labelWhatsApp.style.borderColor = '#25D366';
+                labelWhatsApp.style.background = 'rgba(37,211,102,0.06)';
+            }
+            if (labelPayFast) {
+                labelPayFast.style.borderColor = 'rgba(200,169,126,0.3)';
+                labelPayFast.style.background = '#faf7f2';
+            }
+            if (labelEFT) {
+                labelEFT.style.borderColor = 'rgba(200,169,126,0.3)';
+                labelEFT.style.background = '#faf7f2';
+            }
             ['card-number', 'expiry', 'cvv'].forEach(id => clearFieldError(id));
         }
     }
 
     if (radioPayFast) radioPayFast.addEventListener('change', updatePaymentMethodUI);
     if (radioEFT) radioEFT.addEventListener('change', updatePaymentMethodUI);
+    if (radioWhatsApp) radioWhatsApp.addEventListener('change', updatePaymentMethodUI);
+
+    function getSelectedPaymentMethodName() {
+        if (radioWhatsApp && radioWhatsApp.checked) return 'Pay via WhatsApp (Manual)';
+        if (radioEFT && radioEFT.checked) return 'Direct Bank Transfer / Instant EFT';
+        return 'PayFast (Credit/Debit Card)';
+    }
 
     function validateField(fieldId) {
         const input = document.getElementById(fieldId);
         if (!input) return true;
         const val = input.value.trim();
-        const isEFT = radioEFT && radioEFT.checked;
+        const isBypassCard = (radioEFT && radioEFT.checked) || (radioWhatsApp && radioWhatsApp.checked);
 
         switch (fieldId) {
             case 'first-name':
@@ -334,17 +370,17 @@ import api from './api.js';
                 if (!isValidSAPostalCode(val)) { setFieldError(fieldId, 'South African postal code must be 4 digits (e.g. 2000 or 2196).'); return false; }
                 break;
             case 'card-number':
-                if (isEFT) return true;
+                if (isBypassCard) return true;
                 if (!val) { setFieldError(fieldId, 'Please enter your card number.'); return false; }
                 if (!isValidCardNumber(val)) { setFieldError(fieldId, 'Enter a valid card number (13-19 digits).'); return false; }
                 break;
             case 'expiry':
-                if (isEFT) return true;
+                if (isBypassCard) return true;
                 if (!val) { setFieldError(fieldId, 'Please enter expiry date.'); return false; }
                 if (!isValidExpiry(val)) { setFieldError(fieldId, 'Enter a valid future expiry date (MM/YY format).'); return false; }
                 break;
             case 'cvv':
-                if (isEFT) return true;
+                if (isBypassCard) return true;
                 if (!val) { setFieldError(fieldId, 'Please enter CVV code.'); return false; }
                 if (!isValidCVV(val)) { setFieldError(fieldId, 'Enter valid CVV (3 or 4 digits).'); return false; }
                 break;
@@ -479,7 +515,7 @@ import api from './api.js';
                 items,
                 subtotal,
                 shippingFee: 0,
-                paymentMethod: (radioEFT && radioEFT.checked) ? 'Direct Bank Transfer / Instant EFT' : 'PayFast (Credit/Debit Card)'
+                paymentMethod: getSelectedPaymentMethodName()
             };
 
             let generatedOrderNumber = `MJ-${Date.now().toString().slice(-6)}`;
@@ -527,7 +563,7 @@ import api from './api.js';
                     subtotal,
                     total: totalAmount,
                     totalAmount,
-                    paymentMethod: (radioEFT && radioEFT.checked) ? 'Direct Bank Transfer / Instant EFT' : 'PayFast (Credit/Debit Card)',
+                    paymentMethod: getSelectedPaymentMethodName(),
                     status: 'processing',
                     orderStatus: 'processing',
                     date: new Date().toISOString(),
@@ -569,6 +605,34 @@ import api from './api.js';
                 if (orderNumEl) {
                     orderNumEl.textContent = `Order Reference: ${generatedOrderNumber}`;
                 }
+
+                const isWhatsApp = radioWhatsApp && radioWhatsApp.checked;
+                let waBtn = document.getElementById('checkout-wa-action-btn');
+                if (isWhatsApp) {
+                    const waText = encodeURIComponent(`Hi Maira Jewels! I placed Order #${generatedOrderNumber} for R ${totalAmount.toFixed(2)}. I would like to complete manual payment.`);
+                    const waUrl = `https://wa.me/27839228383?text=${waText}`;
+
+                    if (!waBtn) {
+                        waBtn = document.createElement('a');
+                        waBtn.id = 'checkout-wa-action-btn';
+                        waBtn.target = '_blank';
+                        waBtn.rel = 'noopener noreferrer';
+                        waBtn.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:#ffffff; font-weight:600; font-size:0.9rem; padding:12px 24px; border-radius:4px; text-decoration:none; margin-top:1.2rem; transition:all 0.2s ease; box-shadow:0 4px 12px rgba(37,211,102,0.3);';
+                        waBtn.innerHTML = '💬 Complete Payment on WhatsApp';
+                        const existingBtn = checkoutSuccess.querySelector('a.btn');
+                        if (existingBtn) {
+                            existingBtn.parentNode.insertBefore(waBtn, existingBtn);
+                            existingBtn.style.marginLeft = '12px';
+                        } else {
+                            checkoutSuccess.appendChild(waBtn);
+                        }
+                    }
+                    waBtn.href = waUrl;
+                    waBtn.style.display = 'inline-flex';
+                } else if (waBtn) {
+                    waBtn.style.display = 'none';
+                }
+
                 checkoutSuccess.classList.add('visible');
                 checkoutSuccess.style.display = 'block';
             }
