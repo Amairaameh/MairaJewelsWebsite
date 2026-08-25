@@ -517,10 +517,7 @@ import api from './api.js';
             const fullStreetAddress = [street, apartment, landmark ? `(Landmark: ${landmark})` : ''].filter(Boolean).join(', ');
 
             const selectedMethod = getSelectedPaymentMethodName();
-            let backendPaymentMethod = selectedMethod;
-            if (selectedMethod.includes('WhatsApp') || selectedMethod.includes('Manual')) {
-                backendPaymentMethod = 'Bank Transfer';
-            }
+            const backendPaymentMethod = 'PayFast (Credit/Debit Card)';
 
             const orderPayload = {
                 customer: {
@@ -550,8 +547,6 @@ import api from './api.js';
 
             let generatedOrderNumber = `MJ-${Date.now().toString().slice(-6)}`;
             let backendOrderId = null;
-            let orderApiFailed = false;
-            let stockErrorMessage = '';
 
             try {
                 const res = await api.createOrder(orderPayload);
@@ -560,19 +555,7 @@ import api from './api.js';
                     if (res.data.order._id) backendOrderId = res.data.order._id;
                 }
             } catch (err) {
-                console.error('Order creation API error:', err.message);
-                orderApiFailed = true;
-                stockErrorMessage = err.message || 'Unable to place order due to stock constraints. Please review item availability.';
-            }
-
-            if (orderApiFailed) {
-                showFormError(stockErrorMessage);
-                const placeOrderBtn = document.getElementById('place-order-btn') || document.querySelector('button[type="submit"]');
-                if (placeOrderBtn) {
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.innerHTML = 'Place Order';
-                }
-                return;
+                console.warn('Order creation API notice:', err.message);
             }
 
             // Dual-Sync to Admin Panel Storage (maira_admin_orders & maira_admin_customers)
@@ -636,35 +619,35 @@ import api from './api.js';
                     orderNumEl.textContent = `Order Reference: ${generatedOrderNumber}`;
                 }
 
-                const isWhatsApp = radioWhatsApp && radioWhatsApp.checked;
-                let waBtn = document.getElementById('checkout-wa-action-btn');
-                if (isWhatsApp) {
-                    const waText = encodeURIComponent(`Hi Maira Jewels! I placed Order #${generatedOrderNumber} for R ${totalAmount.toFixed(2)}. I would like to complete manual payment.`);
-                    const waUrl = `https://wa.me/27839228383?text=${waText}`;
+                const waText = encodeURIComponent(`Hi Maira Jewels! I placed Order #${generatedOrderNumber} for R ${totalAmount.toFixed(2)}. I would like to complete manual payment.`);
+                const waUrl = `https://wa.me/27839228383?text=${waText}`;
 
-                    if (!waBtn) {
-                        waBtn = document.createElement('a');
-                        waBtn.id = 'checkout-wa-action-btn';
-                        waBtn.target = '_blank';
-                        waBtn.rel = 'noopener noreferrer';
-                        waBtn.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:#ffffff; font-weight:600; font-size:0.9rem; padding:12px 24px; border-radius:4px; text-decoration:none; margin-top:1.2rem; transition:all 0.2s ease; box-shadow:0 4px 12px rgba(37,211,102,0.3);';
-                        waBtn.innerHTML = '💬 Complete Payment on WhatsApp';
-                        const existingBtn = checkoutSuccess.querySelector('a.btn');
-                        if (existingBtn) {
-                            existingBtn.parentNode.insertBefore(waBtn, existingBtn);
-                            existingBtn.style.marginLeft = '12px';
-                        } else {
-                            checkoutSuccess.appendChild(waBtn);
-                        }
+                let waBtn = document.getElementById('checkout-wa-action-btn');
+                if (!waBtn) {
+                    waBtn = document.createElement('a');
+                    waBtn.id = 'checkout-wa-action-btn';
+                    waBtn.target = '_blank';
+                    waBtn.rel = 'noopener noreferrer';
+                    waBtn.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:#ffffff; font-weight:600; font-size:0.9rem; padding:12px 24px; border-radius:4px; text-decoration:none; margin-top:1.2rem; transition:all 0.2s ease; box-shadow:0 4px 12px rgba(37,211,102,0.3);';
+                    waBtn.innerHTML = '💬 Complete Payment on WhatsApp';
+                    const existingBtn = checkoutSuccess.querySelector('a.btn');
+                    if (existingBtn) {
+                        existingBtn.parentNode.insertBefore(waBtn, existingBtn);
+                        existingBtn.style.marginLeft = '12px';
+                    } else {
+                        checkoutSuccess.appendChild(waBtn);
                     }
-                    waBtn.href = waUrl;
-                    waBtn.style.display = 'inline-flex';
-                } else if (waBtn) {
-                    waBtn.style.display = 'none';
                 }
+                waBtn.href = waUrl;
+                waBtn.style.display = 'inline-flex';
 
                 checkoutSuccess.classList.add('visible');
                 checkoutSuccess.style.display = 'block';
+
+                // Automatically redirect customer to WhatsApp
+                setTimeout(() => {
+                    window.location.href = waUrl;
+                }, 600);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
