@@ -619,7 +619,36 @@ import api from './api.js';
                     orderNumEl.textContent = `Order Reference: ${generatedOrderNumber}`;
                 }
 
-                const waText = encodeURIComponent(`Hi Maira Jewels! I placed Order #${generatedOrderNumber} for R ${totalAmount.toFixed(2)}. I would like to complete manual payment.`);
+                const itemLines = items.map((item, idx) => {
+                    const priceFormatted = formatPrice(item.priceNum * item.quantity);
+                    let imgUrl = item.image || '';
+                    if (imgUrl && !imgUrl.startsWith('http')) {
+                        imgUrl = window.location.origin + (imgUrl.startsWith('/') ? imgUrl : '/' + imgUrl);
+                    }
+                    let line = `${idx + 1}. *${item.name}*\n   Qty: ${item.quantity} | Total: ${priceFormatted}`;
+                    if (imgUrl) {
+                        line += `\n   Image: ${imgUrl}`;
+                    }
+                    return line;
+                }).join('\n\n');
+
+                const rawWaMessage = 
+`*✨ MAIRA JEWELS - MANUAL PAYMENT REQUEST ✨*
+
+*Order Reference:* #${generatedOrderNumber}
+*Customer:* ${firstName} ${lastName}
+*Email:* ${userEmail}
+*Phone:* ${phone}${altPhone ? ` (Alt: ${altPhone})` : ''}
+*Delivery Address:* ${fullStreetAddress}, ${city}, ${zip}
+
+*📦 ORDERED ITEMS:*
+${itemLines}
+
+*💰 TOTAL ORDER AMOUNT:* ${formatPrice(totalAmount)}
+
+Hi Maira Jewels! I placed this order and would like to complete manual payment via WhatsApp. Please send payment details!`;
+
+                const waText = encodeURIComponent(rawWaMessage);
                 const waUrl = `https://wa.me/27839228383?text=${waText}`;
 
                 let waBtn = document.getElementById('checkout-wa-action-btn');
