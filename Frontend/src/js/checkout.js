@@ -326,6 +326,7 @@ import api from './api.js';
     if (radioPayFast) radioPayFast.addEventListener('change', updatePaymentMethodUI);
     if (radioEFT) radioEFT.addEventListener('change', updatePaymentMethodUI);
     if (radioWhatsApp) radioWhatsApp.addEventListener('change', updatePaymentMethodUI);
+    updatePaymentMethodUI();
 
     function getSelectedPaymentMethodName() {
         if (radioWhatsApp && radioWhatsApp.checked) return 'Pay via WhatsApp (Manual)';
@@ -337,7 +338,7 @@ import api from './api.js';
         const input = document.getElementById(fieldId);
         if (!input) return true;
         const val = input.value.trim();
-        const isBypassCard = (radioEFT && radioEFT.checked) || (radioWhatsApp && radioWhatsApp.checked);
+        const isBypassCard = !radioPayFast || !radioPayFast.checked || (radioEFT && radioEFT.checked) || (radioWhatsApp && radioWhatsApp.checked);
 
         switch (fieldId) {
             case 'first-name':

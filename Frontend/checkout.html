@@ -179,9 +179,11 @@
 
                             <!-- Payment Options Selection Cards -->
                             <div class="form-group form-group--full" style="display:flex; flex-direction:column; gap:10px; margin-bottom:1.2rem;">
-                                <label class="payment-option-card payment-option-card--active" id="opt-payfast-label" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border:1px solid #c8a97e; border-radius:3px; background:rgba(200,169,126,0.06); cursor:pointer;">
+                                <!-- PayFast & EFT options temporarily hidden -->
+                                <!--
+                                <label class="payment-option-card" id="opt-payfast-label" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border:1px solid rgba(200,169,126,0.3); border-radius:3px; background:#faf7f2; cursor:pointer;">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <input type="radio" name="payment-method" id="pay-method-payfast" value="PayFast" checked style="accent-color:#c8a97e; cursor:pointer;">
+                                        <input type="radio" name="payment-method" id="pay-method-payfast" value="PayFast" style="accent-color:#c8a97e; cursor:pointer;">
                                         <div>
                                             <strong style="font-size:0.88rem; color:#1c1510; display:block;">PayFast &bull; Credit / Debit Card</strong>
                                             <span style="font-size:0.75rem; color:var(--color-muted);">Instant 256-bit SSL encrypted online payment</span>
@@ -200,10 +202,11 @@
                                     </div>
                                     <span style="border:1px solid #c8a97e; color:#b89060; font-size:0.65rem; font-weight:600; padding:2px 8px; border-radius:2px; letter-spacing:0.05em;">EFT</span>
                                 </label>
+                                -->
 
-                                <label class="payment-option-card" id="opt-whatsapp-label" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border:1px solid rgba(200,169,126,0.3); border-radius:3px; background:#faf7f2; cursor:pointer;">
+                                <label class="payment-option-card payment-option-card--active" id="opt-whatsapp-label" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border:1px solid #25D366; border-radius:3px; background:rgba(37,211,102,0.06); cursor:pointer;">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <input type="radio" name="payment-method" id="pay-method-whatsapp" value="WhatsApp Payment" style="accent-color:#25D366; cursor:pointer;">
+                                        <input type="radio" name="payment-method" id="pay-method-whatsapp" value="WhatsApp Payment" checked style="accent-color:#25D366; cursor:pointer;">
                                         <div>
                                             <strong style="font-size:0.88rem; color:#1c1510; display:block;">Pay via WhatsApp (Manual)</strong>
                                             <span style="font-size:0.75rem; color:var(--color-muted);">Place order & complete payment manually with our team on WhatsApp</span>
@@ -213,23 +216,26 @@
                                 </label>
                             </div>
 
-                            <!-- Card Details Panel (Shown when PayFast is selected) -->
-                            <div id="panel-card-details" class="form-grid" style="grid-column: 1 / -1; margin-top:0;">
+                            <!-- Card Details Panel (Hidden) -->
+                            <!--
+                            <div id="panel-card-details" class="form-grid" style="grid-column: 1 / -1; margin-top:0; display:none;">
                                 <div class="form-group form-group--full">
                                     <label class="form-label" for="card-number">Card Number <span style="color:#c53030;">*</span></label>
-                                    <input class="form-input" type="text" id="card-number" placeholder="Enter 16-digit card number" maxlength="19" required>
+                                    <input class="form-input" type="text" id="card-number" placeholder="Enter 16-digit card number" maxlength="19">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="expiry">Expiry Date <span style="color:#c53030;">*</span></label>
-                                    <input class="form-input" type="text" id="expiry" placeholder="MM / YY" maxlength="7" required>
+                                    <input class="form-input" type="text" id="expiry" placeholder="MM / YY" maxlength="7">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="cvv">CVV <span style="color:#c53030;">*</span></label>
-                                    <input class="form-input" type="text" id="cvv" placeholder="CVV" maxlength="4" required>
+                                    <input class="form-input" type="text" id="cvv" placeholder="CVV" maxlength="4">
                                 </div>
                             </div>
+                            -->
 
-                            <!-- Bank Transfer Details Panel (Hidden by default) -->
+                            <!-- Bank Transfer Details Panel (Hidden) -->
+                            <!--
                             <div id="panel-eft-details" style="display:none; grid-column: 1 / -1; background:#fdfaf6; border:1px solid rgba(200,169,126,0.35); padding:16px; border-radius:3px;">
                                 <div style="font-size:0.82rem; color:#1c1510; line-height:1.6;">
                                     <strong style="color:var(--color-gold-dark); font-size:0.88rem; display:block; margin-bottom:8px;">🏦 Official Bank Transfer Details</strong>
@@ -244,9 +250,10 @@
                                     </p>
                                 </div>
                             </div>
+                            -->
 
-                            <!-- WhatsApp Manual Payment Details Panel (Hidden by default) -->
-                            <div id="panel-whatsapp-details" style="display:none; grid-column: 1 / -1; background:#f4fbf7; border:1px solid rgba(37,211,102,0.35); padding:16px; border-radius:3px;">
+                            <!-- WhatsApp Manual Payment Details Panel (Active) -->
+                            <div id="panel-whatsapp-details" style="display:block; grid-column: 1 / -1; background:#f4fbf7; border:1px solid rgba(37,211,102,0.35); padding:16px; border-radius:3px;">
                                 <div style="font-size:0.82rem; color:#1c1510; line-height:1.6;">
                                     <strong style="color:#128C7E; font-size:0.88rem; display:flex; align-items:center; gap:6px; margin-bottom:8px;">
                                         💬 WhatsApp Manual Payment Instructions
