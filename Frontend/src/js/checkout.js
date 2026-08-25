@@ -577,8 +577,8 @@ import api from './api.js';
                     total: totalAmount,
                     totalAmount,
                     paymentMethod: getSelectedPaymentMethodName(),
-                    status: 'processing',
-                    orderStatus: 'processing',
+                    status: 'pending',
+                    orderStatus: 'pending',
                     date: new Date().toISOString(),
                     createdAt: new Date().toISOString()
                 };
@@ -619,18 +619,22 @@ import api from './api.js';
                     orderNumEl.textContent = `Order Reference: ${generatedOrderNumber}`;
                 }
 
-                const itemLines = items.map((item, idx) => {
+                const successTitle = document.getElementById('checkout-success-title') || checkoutSuccess.querySelector('.checkout-success__title');
+                const successText = document.getElementById('checkout-success-text') || checkoutSuccess.querySelector('.checkout-success__text');
+                if (successTitle) {
+                    successTitle.textContent = 'Order Received — Pending Manual Payment';
+                }
+                if (successText) {
+                    successText.innerHTML = `Your order reference <strong>#${generatedOrderNumber}</strong> has been recorded. Please click the button below to connect with our concierge team on WhatsApp and complete payment so our admin can confirm your order.`;
+                }                const itemLines = items.map((item, idx) => {
                     const priceFormatted = formatPrice(item.priceNum * item.quantity);
+                    let line = `• *${item.name}* (Qty: ${item.quantity}) - ${priceFormatted}`;
                     let imgUrl = item.image || '';
-                    if (imgUrl && !imgUrl.startsWith('http')) {
-                        imgUrl = window.location.origin + (imgUrl.startsWith('/') ? imgUrl : '/' + imgUrl);
-                    }
-                    let line = `${idx + 1}. *${item.name}*\n   Qty: ${item.quantity} | Total: ${priceFormatted}`;
-                    if (imgUrl) {
-                        line += `\n   Image: ${imgUrl}`;
+                    if (imgUrl && imgUrl.startsWith('http')) {
+                        line += `\n  Photo: ${imgUrl}`;
                     }
                     return line;
-                }).join('\n\n');
+                }).join('\n');
 
                 const rawWaMessage = 
 `*✨ MAIRA JEWELS - MANUAL PAYMENT REQUEST ✨*
@@ -649,7 +653,7 @@ ${itemLines}
 Hi Maira Jewels! I placed this order and would like to complete manual payment via WhatsApp. Please send payment details!`;
 
                 const waText = encodeURIComponent(rawWaMessage);
-                const waUrl = `https://wa.me/27839228383?text=${waText}`;
+                const waUrl = `https://api.whatsapp.com/send?phone=27839228383&text=${waText}`;
 
                 let waBtn = document.getElementById('checkout-wa-action-btn');
                 if (!waBtn) {
@@ -672,11 +676,6 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
 
                 checkoutSuccess.classList.add('visible');
                 checkoutSuccess.style.display = 'block';
-
-                // Automatically redirect customer to WhatsApp
-                setTimeout(() => {
-                    window.location.href = waUrl;
-                }, 600);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
