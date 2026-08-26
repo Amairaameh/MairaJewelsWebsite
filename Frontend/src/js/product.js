@@ -245,24 +245,36 @@ import { resolveCategory, isCategoryMatch } from './categoryHelper.js';
             optionsGroup.style.display = hasOptions ? 'block' : 'none';
         }
 
-        // Specs Chips
+        // Custom Specification Badges from Admin Panel & Product Specs
         if (productChips) {
             productChips.innerHTML = '';
             const chips = [];
-            if (p.metal) chips.push(p.metal);
-            if (p.gem) chips.push(p.gem);
-            if (p.specs && !p.metal && !p.gem) {
-                p.specs.split('•').forEach(s => {
-                    const clean = s.trim();
-                    if (clean) chips.push(clean);
+
+            // 1. Prioritize custom Specification Badges added by Admin in Admin Panel (p.specifications or p.specs)
+            const rawSpecs = p.specifications || p.specs;
+            if (Array.isArray(rawSpecs)) {
+                rawSpecs.forEach(s => {
+                    if (s && typeof s === 'string' && s.trim()) chips.push(s.trim());
                 });
-            } else if (chips.length === 0 && p.specs) {
-                chips.push(p.specs);
+            } else if (typeof rawSpecs === 'string' && rawSpecs.trim()) {
+                rawSpecs.split(/[,•|]/).forEach(s => {
+                    const clean = s.trim();
+                    if (clean && clean.toLowerCase() !== '18k gold diamond') chips.push(clean);
+                });
             }
+
+            // 2. If no custom specifications badges from Admin Panel, use metal & gem if specific
+            if (chips.length === 0) {
+                if (p.metal && !['18k gold', 'all-metals', 'all'].includes(p.metal.toLowerCase())) chips.push(p.metal);
+                if (p.gem && !['diamond', 'all'].includes(p.gem.toLowerCase())) chips.push(p.gem);
+            }
+
+            // 3. Fallback default badges if still empty
             if (chips.length === 0) {
                 chips.push('18K Gold Plated', 'Hypoallergenic', 'Tarnish Free');
             }
 
+            // Stock Status Badge
             if (isOutOfStock) {
                 const outChip = document.createElement('span');
                 outChip.className = 'chip';
@@ -277,6 +289,7 @@ import { resolveCategory, isCategoryMatch } from './categoryHelper.js';
                 productChips.appendChild(inChip);
             }
 
+            // Render each specification badge tag entered in Admin Panel
             chips.forEach(chipText => {
                 const chip = document.createElement('span');
                 chip.className = 'chip';
@@ -421,7 +434,8 @@ import { resolveCategory, isCategoryMatch } from './categoryHelper.js';
                 isOutOfStock,
                 inStock: !isOutOfStock,
                 stock: typeof p.stock === 'number' ? p.stock : (typeof p.countInStock === 'number' ? p.countInStock : 10),
-                specs: p.specs || `${p.metal || ''} ${p.gem ? '• ' + p.gem : ''}`.trim(),
+                specifications: p.specifications || p.specs || '',
+                specs: p.specs || p.specifications || '',
                 image: p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
                 images: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),
                 thumbs: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),

@@ -165,8 +165,8 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                         price: priceFormatted,
                         priceNum: priceNum,
                         category: p.category || 'Jewellery',
-                        metal: p.metal || '18K Gold',
-                        gem: p.gem || 'Diamond',
+                        metal: p.metal || '',
+                        gem: p.gem || '',
                         badge: isOutOfStock ? 'OUT OF STOCK' : (p.badge || (p.featured ? 'FEATURED' : '')),
                         isOutOfStock: isOutOfStock,
                         inStock: p.inStock,
@@ -176,7 +176,8 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                         description: p.description || '',
                         color: p.color || p.colour || '',
                         sizes: p.sizes || p.availableSizes || '',
-                        specs: p.specs || ''
+                        specifications: p.specifications || p.specs || '',
+                        specs: p.specs || p.specifications || ''
                     };
                 });
             }
@@ -339,7 +340,9 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                     thumbs: item.thumbs,
                     description: item.description,
                     color: item.color,
-                    sizes: item.sizes
+                    sizes: item.sizes,
+                    specifications: item.specifications || item.specs || '',
+                    specs: item.specs || item.specifications || ''
                 };
                 try {
                     localStorage.setItem('maira_selected_product', JSON.stringify(prodData));
