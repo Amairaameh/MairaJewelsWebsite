@@ -497,7 +497,7 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        initFiltersFromURL();
+        parseURLParams();
         initFilterControls();
         updateCartBadge();
         loadProductsFromAPI();
