@@ -187,55 +187,73 @@ import { resolveCategory, isCategoryMatch } from './categoryHelper.js';
 
         let hasOptions = false;
 
-        if (colorVal && colorWrapper && colorPills) {
-            hasOptions = true;
-            colorWrapper.style.display = 'block';
-            colorPills.innerHTML = '';
-            
-            const colorsArr = colorVal.split(/[,/]/).map(c => c.trim()).filter(Boolean);
-            selectedColor = colorsArr[0] || colorVal;
-            if (selectedColorVal) selectedColorVal.textContent = selectedColor;
+    function parseOptionsList(valStr) {
+        if (!valStr || typeof valStr !== 'string') return [];
+        return valStr
+            .split(/[,./|]|\)\s*\(/)
+            .map(s => s.replace(/^[()\s]+|[()\s]+$/g, '').trim())
+            .filter(Boolean);
+    }
 
-            colorsArr.forEach((cText, idx) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `option-pill ${idx === 0 ? 'active' : ''}`;
-                btn.textContent = cText;
-                btn.addEventListener('click', () => {
-                    colorPills.querySelectorAll('.option-pill').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    selectedColor = cText;
-                    if (selectedColorVal) selectedColorVal.textContent = cText;
+        if (colorVal && colorWrapper && colorPills) {
+            const colorsArr = parseOptionsList(colorVal);
+            if (colorsArr.length > 0) {
+                hasOptions = true;
+                colorWrapper.style.display = 'block';
+                colorPills.innerHTML = '';
+                
+                selectedColor = colorsArr[0];
+                if (selectedColorVal) selectedColorVal.textContent = selectedColor;
+
+                colorsArr.forEach((cText, idx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `option-pill ${idx === 0 ? 'active' : ''}`;
+                    btn.textContent = cText;
+                    btn.addEventListener('click', () => {
+                        colorPills.querySelectorAll('.option-pill').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        selectedColor = cText;
+                        if (selectedColorVal) selectedColorVal.textContent = cText;
+                    });
+                    colorPills.appendChild(btn);
                 });
-                colorPills.appendChild(btn);
-            });
+            } else {
+                colorWrapper.style.display = 'none';
+                selectedColor = '';
+            }
         } else if (colorWrapper) {
             colorWrapper.style.display = 'none';
             selectedColor = '';
         }
 
         if (sizesVal && sizesWrapper && sizesPills) {
-            hasOptions = true;
-            sizesWrapper.style.display = 'block';
-            sizesPills.innerHTML = '';
+            const sizesArr = parseOptionsList(sizesVal);
+            if (sizesArr.length > 0) {
+                hasOptions = true;
+                sizesWrapper.style.display = 'block';
+                sizesPills.innerHTML = '';
 
-            const sizesArr = sizesVal.split(/[,/]/).map(s => s.trim()).filter(Boolean);
-            selectedSize = sizesArr[0] || sizesVal;
-            if (selectedSizeVal) selectedSizeVal.textContent = selectedSize;
+                selectedSize = sizesArr[0];
+                if (selectedSizeVal) selectedSizeVal.textContent = selectedSize;
 
-            sizesArr.forEach((sText, idx) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `option-pill ${idx === 0 ? 'active' : ''}`;
-                btn.textContent = sText;
-                btn.addEventListener('click', () => {
-                    sizesPills.querySelectorAll('.option-pill').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    selectedSize = sText;
-                    if (selectedSizeVal) selectedSizeVal.textContent = sText;
+                sizesArr.forEach((sText, idx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `option-pill ${idx === 0 ? 'active' : ''}`;
+                    btn.textContent = sText;
+                    btn.addEventListener('click', () => {
+                        sizesPills.querySelectorAll('.option-pill').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        selectedSize = sText;
+                        if (selectedSizeVal) selectedSizeVal.textContent = sText;
+                    });
+                    sizesPills.appendChild(btn);
                 });
-                sizesPills.appendChild(btn);
-            });
+            } else {
+                sizesWrapper.style.display = 'none';
+                selectedSize = '';
+            }
         } else if (sizesWrapper) {
             sizesWrapper.style.display = 'none';
             selectedSize = '';
