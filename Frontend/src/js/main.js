@@ -353,11 +353,15 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
             // Initial render with 'all'
             renderProductsForCategory('all');
 
-            // Also populate "Crafted to Perfection" Section dynamically
+            // Also populate "Crafted to Perfection" Section dynamically (15 items per batch)
             const craftedGrid = document.getElementById('crafted-perfection-grid');
-            if (craftedGrid) {
+            let craftedVisibleCount = 15;
+
+            function renderCraftedSection() {
+                if (!craftedGrid) return;
                 if (allProducts.length > 0) {
-                    craftedGrid.innerHTML = allProducts.map(p => {
+                    const itemsToDisplay = allProducts.slice(0, craftedVisibleCount);
+                    craftedGrid.innerHTML = itemsToDisplay.map(p => {
                         let priceStr = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                             ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
                             : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'R 448.00');
@@ -396,12 +400,44 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                             </article>
                         `;
                     }).join('');
+
+                    let loadMoreCrafted = document.getElementById('crafted-load-more-container');
+                    if (!loadMoreCrafted) {
+                        loadMoreCrafted = document.createElement('div');
+                        loadMoreCrafted.id = 'crafted-load-more-container';
+                        loadMoreCrafted.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 2.5rem 0 1rem 0; clear: both; width: 100%;';
+                        if (craftedGrid.parentNode) {
+                            craftedGrid.parentNode.insertBefore(loadMoreCrafted, craftedGrid.nextSibling);
+                        }
+                    }
+
+                    if (craftedVisibleCount < allProducts.length) {
+                        const remaining = allProducts.length - craftedVisibleCount;
+                        loadMoreCrafted.innerHTML = `
+                            <button class="btn btn--outline btn--load-more" id="crafted-load-more-btn" style="padding: 0.9rem 2.5rem; font-size: 0.9rem; letter-spacing: 0.08em; font-weight: 600; text-transform: uppercase;">
+                                View More (${remaining} Remaining) ↓
+                            </button>
+                        `;
+                        const loadMoreBtn = document.getElementById('crafted-load-more-btn');
+                        if (loadMoreBtn) {
+                            loadMoreBtn.addEventListener('click', () => {
+                                craftedVisibleCount += 15;
+                                renderCraftedSection();
+                            });
+                        }
+                    } else if (allProducts.length > 15) {
+                        loadMoreCrafted.innerHTML = `<p style="font-size:0.85rem; color:var(--color-muted); font-style:italic;">Showing all ${allProducts.length} fine jewellery pieces</p>`;
+                    } else {
+                        loadMoreCrafted.innerHTML = '';
+                    }
+
+                    bindCardNavigation();
                 } else {
                     craftedGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--color-muted); padding: 2rem 0;">No products found in collection.</p>';
                 }
             }
 
-            bindCardNavigation();
+            renderCraftedSection();
 
             // Load Dynamic Categories Slider with counts
             loadDynamicCategories(allProducts, categoriesMasterList);

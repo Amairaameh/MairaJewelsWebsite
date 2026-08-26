@@ -20,6 +20,7 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
     let activePriceRange = 'all';
     let activeSort = 'featured';
     let searchQuery = '';
+    let visibleProductCount = 15;
 
     function getCart() {
         try {
@@ -76,7 +77,6 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
             if (res.data && Array.isArray(res.data.categories) && res.data.categories.length > 0) {
                 loadedCategoriesList = res.data.categories;
             } else {
-                // Fallback to distinct categories present in live products
                 const distinct = [...new Set(liveCatalogItems.map(item => item.category).filter(Boolean))];
                 loadedCategoriesList = distinct.map(c => typeof c === 'object' ? c : { name: String(c) });
             }
@@ -87,7 +87,6 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
 
                 let categoriesToRender = loadedCategoriesList.map(c => typeof c === 'object' ? c.name : c);
 
-                // Add any categories present in products that were not in backend category master list
                 liveCatalogItems.forEach(item => {
                     const resolved = resolveCategory(item.category, loadedCategoriesList);
                     if (resolved.name && !categoriesToRender.some(c => c.toLowerCase() === resolved.name.toLowerCase())) {
@@ -98,103 +97,94 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                 const currentActive = activeCategory.toLowerCase();
                 const isAllActive = currentActive === 'all' || currentActive === 'all jewellery';
 
-                let html = `<button class="cat-pill ${isAllActive ? 'cat-pill--active' : ''}" data-category="all">All Jewellery ${totalAll ? `<span class="cat-count-badge">(${totalAll})</span>` : ''}</button>`;
-
+                let pillsHtml = `<button class="cat-pill ${isAllActive ? 'cat-pill--active' : ''}" data-category="all">All Jewellery <span class="cat-count-badge">${totalAll}</span></button>`;
                 categoriesToRender.forEach(catName => {
                     const count = categoryCounts[catName] || 0;
-                    const isActive = isCategoryMatch(catName, activeCategory, loadedCategoriesList);
-                    html += `<button class="cat-pill ${isActive ? 'cat-pill--active' : ''}" data-category="${catName}">${catName} ${count ? `<span class="cat-count-badge">(${count})</span>` : ''}</button>`;
+                    const isActive = isCategoryMatch(activeCategory, catName, loadedCategoriesList);
+                    pillsHtml += `<button class="cat-pill ${isActive ? 'cat-pill--active' : ''}" data-category="${catName}">${catName} <span class="cat-count-badge">${count}</span></button>`;
                 });
-                pillsBar.innerHTML = html;
+                pillsBar.innerHTML = pillsHtml;
 
-                pillsBar.querySelectorAll('.cat-pill').forEach(pill => {
+                const pills = pillsBar.querySelectorAll('.cat-pill');
+                pills.forEach(pill => {
                     pill.addEventListener('click', () => {
-                        pillsBar.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('cat-pill--active'));
+                        pills.forEach(p => p.classList.remove('cat-pill--active'));
                         pill.classList.add('cat-pill--active');
                         activeCategory = pill.dataset.category || 'all';
+                        visibleProductCount = 15;
 
-                        // Sync URL parameter without page reload
-                        try {
-                            const newUrl = new URL(window.location.href);
-                            if (activeCategory === 'all') {
-                                newUrl.searchParams.delete('category');
-                                newUrl.searchParams.delete('cat');
-                            } else {
-                                newUrl.searchParams.set('category', activeCategory);
-                            }
-                            window.history.replaceState({}, '', newUrl.toString());
-                        } catch (e) {}
+                        // Sync URL query state
+                        const url = new URL(window.location.href);
+                        if (activeCategory === 'all') {
+                            url.searchParams.delete('category');
+                        } else {
+                            url.searchParams.set('category', activeCategory);
+                        }
+                        window.history.replaceState({}, '', url.toString());
 
                         renderCatalog();
                     });
                 });
             }
         } catch (err) {
-            console.warn('API getCategories error:', err.message);
+            console.warn('Category load API error:', err.message);
         }
     }
 
     /* ---------- Load Products Dynamically from Backend API ---------- */
     async function loadProductsFromAPI() {
-        const grid = document.getElementById('catalog-grid');
-        const resultsCount = document.getElementById('results-count');
-
-        if (grid) {
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 60px 0; color: var(--color-muted);"><p style="font-size: 1.1rem;">Loading fine jewellery collection...</p></div>';
-        }
-
         try {
-            const res = await api.getProducts({ limit: 200 });
+            const res = await api.getProducts();
             if (res.data && Array.isArray(res.data.products)) {
-                liveCatalogItems = res.data.products.map(p => {
-                    const priceFormatted = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
+                liveCatalogItems = res.data.products.map((p, index) => {
+                    const priceNum = p.priceNum || parsePriceNum(p.price);
+                    let priceFormatted = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                         ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
-                        : `R ${(p.priceNum || parsePriceNum(p.price) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-                    
-                    const priceNumber = p.priceNum || parsePriceNum(p.price) || 0;
-                    const primaryImg = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
-                    const allThumbs = (p.images && p.images.length > 0) ? p.images : (p.thumbs || [primaryImg]);
+                        : `R ${priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
+                    let imgSrc = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
+                    if (imgSrc.startsWith('/uploads/')) {
+                        imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
+                    }
                     const isOutOfStock = (p.inStock === false) ||
                                          (typeof p.stock === 'number' && p.stock <= 0) ||
                                          (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
                                          (typeof p.stockQty === 'number' && p.stockQty <= 0);
 
                     return {
-                        id: p._id || p.customId,
-                        mongoId: p._id,
+                        id: p._id || p.customId || `prod-${index}`,
+                        mongoId: p._id || p.customId,
                         name: p.name,
-                        category: p.category || 'Fine Jewellery',
                         price: priceFormatted,
-                        priceNum: priceNumber,
+                        priceNum: priceNum,
+                        category: p.category || 'Jewellery',
                         metal: p.metal || '18K Gold',
                         gem: p.gem || 'Diamond',
-                        specs: p.specs || `${p.metal || ''} ${p.gem ? '• ' + p.gem : ''}`.trim(),
-                        badge: p.badge || '',
-                        isOutOfStock,
-                        inStock: !isOutOfStock,
-                        stock: typeof p.stock === 'number' ? p.stock : (typeof p.countInStock === 'number' ? p.countInStock : 10),
-                        image: primaryImg,
-                        thumbs: allThumbs,
+                        badge: isOutOfStock ? 'OUT OF STOCK' : (p.badge || (p.featured ? 'FEATURED' : '')),
+                        isOutOfStock: isOutOfStock,
+                        inStock: p.inStock,
+                        stock: p.stock,
+                        image: imgSrc,
+                        thumbs: [imgSrc],
                         description: p.description || '',
                         color: p.color || p.colour || '',
-                        sizes: p.sizes || p.availableSizes || ''
+                        sizes: p.sizes || p.availableSizes || '',
+                        specs: p.specs || ''
                     };
                 });
-            } else {
-                liveCatalogItems = [];
             }
         } catch (err) {
-            console.error('API getProducts failed:', err.message);
-            liveCatalogItems = [];
+            console.warn('Backend API connection notice, using catalog view fallback:', err.message);
         }
 
-        // Re-sync categories bar with real product categories & render
+        // First load categories, then parse URL params and render catalog
         await loadCategoriesFromAPI();
+        parseURLParams();
         renderCatalog();
     }
 
-    function initFiltersFromURL() {
+    /* ---------- Parse URL Parameters ---------- */
+    function parseURLParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const cat = urlParams.get('category') || urlParams.get('cat');
         const metal = urlParams.get('metal');
@@ -217,7 +207,6 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
         if (!grid) return;
 
         let filtered = liveCatalogItems.filter(item => {
-            // Category Filter using categoryHelper isCategoryMatch
             if (activeCategory && activeCategory !== 'all') {
                 if (!isCategoryMatch(item.category, activeCategory, loadedCategoriesList)) {
                     return false;
@@ -263,10 +252,21 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
         }
 
         if (resultsCount) {
-            resultsCount.textContent = `Showing ${filtered.length} piece${filtered.length === 1 ? '' : 's'}`;
+            const showingCount = Math.min(visibleProductCount, filtered.length);
+            resultsCount.textContent = `Showing ${showingCount} of ${filtered.length} piece${filtered.length === 1 ? '' : 's'}`;
         }
 
         grid.innerHTML = '';
+
+        let loadMoreContainer = document.getElementById('catalog-load-more-container');
+        if (!loadMoreContainer) {
+            loadMoreContainer = document.createElement('div');
+            loadMoreContainer.id = 'catalog-load-more-container';
+            loadMoreContainer.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 2.5rem 0 1rem 0; clear: both; width: 100%;';
+            if (grid.parentNode) {
+                grid.parentNode.insertBefore(loadMoreContainer, grid.nextSibling);
+            }
+        }
 
         if (filtered.length === 0) {
             grid.innerHTML = `
@@ -279,10 +279,13 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
             if (clearBtn) {
                 clearBtn.addEventListener('click', resetAllFilters);
             }
+            loadMoreContainer.innerHTML = '';
             return;
         }
 
-        filtered.forEach(item => {
+        const displayedItems = filtered.slice(0, visibleProductCount);
+
+        displayedItems.forEach(item => {
             const card = document.createElement('article');
             card.className = 'product-card';
             card.style.cursor = 'pointer';
@@ -314,7 +317,6 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                 </div>
             `;
 
-            // Card click (including image) navigates to PDP
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.add-to-cart-btn')) return;
                 const prodData = {
@@ -338,7 +340,6 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                 window.location.href = `product.html?id=${encodeURIComponent(item.mongoId || item.id)}`;
             });
 
-            // Quick Add button
             const addBtn = card.querySelector('.add-to-cart-btn');
             if (addBtn) {
                 addBtn.addEventListener('click', (e) => {
@@ -370,6 +371,26 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
 
             grid.appendChild(card);
         });
+
+        if (visibleProductCount < filtered.length) {
+            const remaining = filtered.length - visibleProductCount;
+            loadMoreContainer.innerHTML = `
+                <button class="btn btn--outline btn--load-more" id="load-more-products-btn" style="padding: 0.9rem 2.5rem; font-size: 0.9rem; letter-spacing: 0.08em; font-weight: 600; text-transform: uppercase;">
+                    View More (${remaining} Remaining) ↓
+                </button>
+            `;
+            const loadMoreBtn = document.getElementById('load-more-products-btn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    visibleProductCount += 15;
+                    renderCatalog();
+                });
+            }
+        } else if (filtered.length > 15) {
+            loadMoreContainer.innerHTML = `<p style="font-size:0.85rem; color:var(--color-muted); font-style:italic;">You've viewed all ${filtered.length} fine jewellery pieces</p>`;
+        } else {
+            loadMoreContainer.innerHTML = '';
+        }
     }
 
     function resetAllFilters() {
