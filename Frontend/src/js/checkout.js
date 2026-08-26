@@ -552,6 +552,8 @@ import api from './api.js';
                 totalAmount,
                 shippingFee: 0,
                 paymentMethod: backendPaymentMethod,
+                paymentStatus: 'pending',
+                isPaid: false,
                 status: 'pending',
                 orderStatus: 'pending'
             };
@@ -589,6 +591,8 @@ import api from './api.js';
                     total: totalAmount,
                     totalAmount,
                     paymentMethod: getSelectedPaymentMethodName(),
+                    paymentStatus: 'pending',
+                    isPaid: false,
                     status: 'pending',
                     orderStatus: 'pending',
                     date: new Date().toISOString(),
