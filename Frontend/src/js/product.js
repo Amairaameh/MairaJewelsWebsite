@@ -4,6 +4,7 @@
    ============================================= */
 
 import api from './api.js';
+import { resolveCategory, isCategoryMatch } from './categoryHelper.js';
 
 (function () {
     'use strict';
@@ -139,7 +140,10 @@ import api from './api.js';
 
         if (breadcrumbName) breadcrumbName.textContent = p.name;
         if (pageTitle) pageTitle.textContent = `${p.name} — MairaJewels`;
-        if (productCategory) productCategory.textContent = p.category || 'Fine Jewellery';
+        if (productCategory) {
+            const resCat = resolveCategory(p.category);
+            productCategory.innerHTML = `<a href="collections.html?category=${encodeURIComponent(resCat.name)}" style="color:var(--color-gold); text-decoration:none;">${resCat.name}</a>`;
+        }
         if (productName) productName.textContent = p.name;
         
         const isOutOfStock = (p.inStock === false) ||
@@ -438,15 +442,36 @@ import api from './api.js';
         if (!relatedGrid) return;
 
         try {
-            const res = await api.getProducts({ limit: 8 });
-            if (res.data && res.data.products && res.data.products.length > 0) {
+            const [catRes, prodRes] = await Promise.all([
+                api.getCategories().catch(() => ({ data: { categories: [] } })),
+                api.getProducts({ limit: 100 }).catch(() => ({ data: { products: [] } }))
+            ]);
+
+            const categoriesMaster = (catRes.data && catRes.data.categories) ? catRes.data.categories : [];
+            const allProds = (prodRes.data && prodRes.data.products) ? prodRes.data.products : [];
+
+            if (allProds.length > 0) {
                 const currentId = currentProduct ? (currentProduct.mongoId || currentProduct.id) : null;
-                const currentName = currentProduct ? currentProduct.name.toLowerCase() : '';
+                const currentName = currentProduct ? (currentProduct.name || '').toLowerCase() : '';
+                const currentCategory = currentProduct ? currentProduct.category : null;
                 
-                // Filter out current active product
-                const related = res.data.products
-                    .filter(p => (p._id !== currentId && p.customId !== currentId && p.name.toLowerCase() !== currentName))
-                    .slice(0, 4);
+                // 1. Exclude current product
+                const candidates = allProds.filter(p => (p._id !== currentId && p.customId !== currentId && (p.name || '').toLowerCase() !== currentName));
+
+                // 2. Prioritize products matching current category
+                let sameCategoryProds = [];
+                let otherCategoryProds = [];
+
+                candidates.forEach(p => {
+                    if (currentCategory && isCategoryMatch(p.category, currentCategory, categoriesMaster)) {
+                        sameCategoryProds.push(p);
+                    } else {
+                        otherCategoryProds.push(p);
+                    }
+                });
+
+                // Combine same category first, then fallback to others
+                const related = [...sameCategoryProds, ...otherCategoryProds].slice(0, 4);
 
                 if (related.length > 0) {
                     relatedGrid.innerHTML = '';
@@ -463,6 +488,7 @@ import api from './api.js';
 
                         const itemColor = item.color || item.colour || '';
                         const itemSizes = item.sizes || item.availableSizes || '';
+                        const resCat = resolveCategory(item.category, categoriesMaster);
 
                         card.innerHTML = `
                             <div class="related-card__image" style="position:relative;">
@@ -470,7 +496,7 @@ import api from './api.js';
                                 <img src="${itemImg}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                             </div>
                             <div class="related-card__body">
-                                <span class="related-card__category">${item.category || 'Fine Jewellery'}</span>
+                                <span class="related-card__category">${resCat.name}</span>
                                 <h4 class="related-card__name">${item.name}</h4>
                                 ${itemColor ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Colour:</span> ${itemColor}</p>` : ''}
                                 ${itemSizes ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Sizes:</span> ${itemSizes}</p>` : ''}

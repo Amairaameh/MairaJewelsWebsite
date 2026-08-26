@@ -4,12 +4,14 @@
    ============================================= */
 
 import api from './api.js';
+import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryHelper.js';
 
 (function () {
     'use strict';
 
     // 100% Dynamic Items loaded directly from MongoDB API
     let liveCatalogItems = [];
+    let loadedCategoriesList = [];
 
     // Filter states
     let activeCategory = 'all';
@@ -71,33 +73,61 @@ import api from './api.js';
         try {
             const res = await api.getCategories();
             const pillsBar = document.querySelector('.category-pills-bar');
+            if (res.data && Array.isArray(res.data.categories) && res.data.categories.length > 0) {
+                loadedCategoriesList = res.data.categories;
+            } else {
+                // Fallback to distinct categories present in live products
+                const distinct = [...new Set(liveCatalogItems.map(item => item.category).filter(Boolean))];
+                loadedCategoriesList = distinct.map(c => typeof c === 'object' ? c : { name: String(c) });
+            }
+
             if (pillsBar) {
-                let categories = [];
-                if (res.data && Array.isArray(res.data.categories) && res.data.categories.length > 0) {
-                    categories = res.data.categories.map(c => c.name);
-                } else {
-                    // Fallback to distinct categories present in live products
-                    categories = [...new Set(liveCatalogItems.map(item => item.category).filter(Boolean))];
-                }
+                const categoryCounts = getCategoryCounts(liveCatalogItems, loadedCategoriesList);
+                const totalAll = liveCatalogItems.length;
 
-                if (categories.length > 0) {
-                    const currentActive = activeCategory.toLowerCase();
-                    let html = `<button class="cat-pill ${currentActive === 'all' ? 'cat-pill--active' : ''}" data-category="all">All Jewellery</button>`;
-                    categories.forEach(catName => {
-                        const isActive = currentActive === catName.toLowerCase();
-                        html += `<button class="cat-pill ${isActive ? 'cat-pill--active' : ''}" data-category="${catName}">${catName}</button>`;
-                    });
-                    pillsBar.innerHTML = html;
+                let categoriesToRender = loadedCategoriesList.map(c => typeof c === 'object' ? c.name : c);
 
-                    pillsBar.querySelectorAll('.cat-pill').forEach(pill => {
-                        pill.addEventListener('click', () => {
-                            pillsBar.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('cat-pill--active'));
-                            pill.classList.add('cat-pill--active');
-                            activeCategory = pill.dataset.category || 'all';
-                            renderCatalog();
-                        });
+                // Add any categories present in products that were not in backend category master list
+                liveCatalogItems.forEach(item => {
+                    const resolved = resolveCategory(item.category, loadedCategoriesList);
+                    if (resolved.name && !categoriesToRender.some(c => c.toLowerCase() === resolved.name.toLowerCase())) {
+                        categoriesToRender.push(resolved.name);
+                    }
+                });
+
+                const currentActive = activeCategory.toLowerCase();
+                const isAllActive = currentActive === 'all' || currentActive === 'all jewellery';
+
+                let html = `<button class="cat-pill ${isAllActive ? 'cat-pill--active' : ''}" data-category="all">All Jewellery ${totalAll ? `<span class="cat-count-badge">(${totalAll})</span>` : ''}</button>`;
+
+                categoriesToRender.forEach(catName => {
+                    const count = categoryCounts[catName] || 0;
+                    const isActive = isCategoryMatch(catName, activeCategory, loadedCategoriesList);
+                    html += `<button class="cat-pill ${isActive ? 'cat-pill--active' : ''}" data-category="${catName}">${catName} ${count ? `<span class="cat-count-badge">(${count})</span>` : ''}</button>`;
+                });
+                pillsBar.innerHTML = html;
+
+                pillsBar.querySelectorAll('.cat-pill').forEach(pill => {
+                    pill.addEventListener('click', () => {
+                        pillsBar.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('cat-pill--active'));
+                        pill.classList.add('cat-pill--active');
+                        activeCategory = pill.dataset.category || 'all';
+
+                        // Sync URL parameter without page reload
+                        try {
+                            const newUrl = new URL(window.location.href);
+                            if (activeCategory === 'all') {
+                                newUrl.searchParams.delete('category');
+                                newUrl.searchParams.delete('cat');
+                            } else {
+                                newUrl.searchParams.set('category', activeCategory);
+                            }
+                            window.history.replaceState({}, '', newUrl.toString());
+                        } catch (e) {}
+
+                        renderCatalog();
                     });
-                }
+                });
             }
         } catch (err) {
             console.warn('API getCategories error:', err.message);
@@ -159,8 +189,8 @@ import api from './api.js';
             liveCatalogItems = [];
         }
 
-        // Re-sync categories bar with real product categories
-        loadCategoriesFromAPI();
+        // Re-sync categories bar with real product categories & render
+        await loadCategoriesFromAPI();
         renderCatalog();
     }
 
@@ -173,13 +203,6 @@ import api from './api.js';
 
         if (cat) {
             activeCategory = cat;
-            const pills = document.querySelectorAll('.cat-pill');
-            pills.forEach(pill => {
-                if (pill.dataset.category && pill.dataset.category.toLowerCase() === cat.toLowerCase()) {
-                    pills.forEach(p => p.classList.remove('cat-pill--active'));
-                    pill.classList.add('cat-pill--active');
-                }
-            });
         }
 
         if (metal) activeMetal = metal;
@@ -194,11 +217,9 @@ import api from './api.js';
         if (!grid) return;
 
         let filtered = liveCatalogItems.filter(item => {
+            // Category Filter using categoryHelper isCategoryMatch
             if (activeCategory && activeCategory !== 'all') {
-                const catLower = activeCategory.toLowerCase();
-                if (catLower === 'solitaire' || catLower === 'solitaires') {
-                    if (!item.name.toLowerCase().includes('solitaire') && item.gem.toLowerCase() !== 'diamond') return false;
-                } else if (item.category.toLowerCase() !== catLower) {
+                if (!isCategoryMatch(item.category, activeCategory, loadedCategoriesList)) {
                     return false;
                 }
             }
@@ -266,6 +287,8 @@ import api from './api.js';
             card.className = 'product-card';
             card.style.cursor = 'pointer';
 
+            const resolvedCatName = resolveCategory(item.category, loadedCategoriesList).name;
+
             const badgeHtml = item.isOutOfStock
                 ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
                 : (item.badge ? `<span class="product-card__badge">${item.badge}</span>` : '');
@@ -281,7 +304,7 @@ import api from './api.js';
                 </div>
                 <div class="product-card__body">
                     <h3 class="product-card__name">${item.name}</h3>
-                    <p class="product-card__type">${item.specs || item.category || ''}</p>
+                    <p class="product-card__type">${item.specs ? `${item.specs} · ${resolvedCatName}` : resolvedCatName}</p>
                     ${item.color ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Colour:</span> ${item.color}</p>` : ''}
                     ${item.sizes ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Sizes:</span> ${item.sizes}</p>` : ''}
                     <div class="product-card__footer">

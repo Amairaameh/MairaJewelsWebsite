@@ -2023,6 +2023,13 @@ input, select, textarea { font-family: var(--font-sans); }
     border-color: var(--color-charcoal);
 }
 
+.cat-count-badge {
+    font-size: 0.72rem;
+    opacity: 0.8;
+    margin-left: 3px;
+    font-weight: 500;
+}
+
 .collections-layout {
     display: grid;
     grid-template-columns: 250px 1fr;

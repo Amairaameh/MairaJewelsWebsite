@@ -4,6 +4,7 @@
    ============================================= */
 
 import api from './api.js';
+import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryHelper.js';
 
 (function () {
     'use strict';
@@ -139,6 +140,9 @@ import api from './api.js';
     function bindCardNavigation() {
         const allCards = document.querySelectorAll('.diamond-card, .product-card');
         allCards.forEach(card => {
+            // Do NOT bind product PDP navigation onto category cards!
+            if (card.classList.contains('category-card') || card.closest('.category-card')) return;
+
             card.style.cursor = 'pointer';
             card.addEventListener('click', function (e) {
                 if (e.target.closest('.add-to-cart') || e.target.closest('button')) return;
@@ -237,17 +241,19 @@ import api from './api.js';
             ]);
 
             const allProducts = (prodRes.data && Array.isArray(prodRes.data.products)) ? prodRes.data.products : [];
-            let categoriesList = [];
+            let categoriesMasterList = [];
 
             if (catRes.data && Array.isArray(catRes.data.categories) && catRes.data.categories.length > 0) {
-                categoriesList = catRes.data.categories.map(c => typeof c === 'string' ? c : c.name).filter(Boolean);
+                categoriesMasterList = catRes.data.categories;
             }
 
+            let categoriesNamesList = categoriesMasterList.map(c => typeof c === 'string' ? c : c.name).filter(Boolean);
+
             // Also include any categories found on active products so all available categories have pills
-            const productCategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            productCategories.forEach(cat => {
-                if (!categoriesList.some(c => c.toLowerCase() === cat.toLowerCase())) {
-                    categoriesList.push(cat);
+            allProducts.forEach(p => {
+                const resolved = resolveCategory(p.category, categoriesMasterList);
+                if (resolved.name && !categoriesNamesList.some(c => c.toLowerCase() === resolved.name.toLowerCase())) {
+                    categoriesNamesList.push(resolved.name);
                 }
             });
 
@@ -256,7 +262,7 @@ import api from './api.js';
             function renderProductsForCategory(category) {
                 let filtered = allProducts;
                 if (category !== 'all') {
-                    filtered = allProducts.filter(p => p.category && p.category.toLowerCase() === category.toLowerCase());
+                    filtered = allProducts.filter(p => isCategoryMatch(p.category, category, categoriesMasterList));
                 }
 
                 if (viewCollectionBtn) {
@@ -294,7 +300,9 @@ import api from './api.js';
                                          (typeof p.stock === 'number' && p.stock <= 0) ||
                                          (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
                                          (typeof p.stockQty === 'number' && p.stockQty <= 0);
-                    const specsStr = p.specs || `${p.metal || '18K Gold'}${p.gem ? ' • ' + p.gem : ''}`;
+                    
+                    const resCat = resolveCategory(p.category, categoriesMasterList);
+                    const specsStr = p.specs ? `${p.specs} · ${resCat.name}` : (resCat.name || `${p.metal || '18K Gold'}${p.gem ? ' • ' + p.gem : ''}`);
                     const badgeHtml = isOutOfStock
                         ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
                         : '';
@@ -321,11 +329,13 @@ import api from './api.js';
                 bindCardNavigation();
             }
 
-            // Render dynamic filter pills
+            // Render dynamic filter pills with product counts
             if (pillsContainer) {
-                let pillsHtml = `<button class="filter-pill filter-pill--active" data-cat="all">All design</button>`;
-                categoriesList.forEach(catName => {
-                    pillsHtml += `<button class="filter-pill" data-cat="${catName}">${catName}</button>`;
+                const catCounts = getCategoryCounts(allProducts, categoriesMasterList);
+                let pillsHtml = `<button class="filter-pill filter-pill--active" data-cat="all">All design (${allProducts.length})</button>`;
+                categoriesNamesList.forEach(catName => {
+                    const count = catCounts[catName] || 0;
+                    pillsHtml += `<button class="filter-pill" data-cat="${catName}">${catName} (${count})</button>`;
                 });
                 pillsContainer.innerHTML = pillsHtml;
 
@@ -359,7 +369,9 @@ import api from './api.js';
                                              (typeof p.stock === 'number' && p.stock <= 0) ||
                                              (typeof p.countInStock === 'number' && p.countInStock <= 0) ||
                                              (typeof p.stockQty === 'number' && p.stockQty <= 0);
-                        const specsStr = p.specs || `${p.category || 'Fine Jewellery'} ${p.metal ? '· ' + p.metal : ''}`.trim();
+                        
+                        const resCat = resolveCategory(p.category, categoriesMasterList);
+                        const specsStr = p.specs ? `${p.specs} · ${resCat.name}` : (resCat.name || `${p.metal || '18K Gold'}${p.gem ? ' • ' + p.gem : ''}`);
                         const badgeHtml = isOutOfStock
                             ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
                             : (p.badge ? `<span class="product-card__badge">${p.badge}</span>` : '');
@@ -391,6 +403,9 @@ import api from './api.js';
 
             bindCardNavigation();
 
+            // Load Dynamic Categories Slider with counts
+            loadDynamicCategories(allProducts, categoriesMasterList);
+
         } catch (err) {
             console.warn('Load Men & Women Section error:', err.message);
         }
@@ -399,7 +414,7 @@ import api from './api.js';
     loadMenWomenSection();
 
     /* ---------- Load Dynamic Categories on Homepage Grids (with 3-Item Slider) ---------- */
-    async function loadDynamicCategories() {
+    async function loadDynamicCategories(allProducts = [], categoriesMasterList = []) {
         const grid = document.getElementById('dynamic-categories-grid');
         const controls = document.getElementById('categories-slider-controls');
         const prevBtn = document.getElementById('cat-slider-prev');
@@ -407,29 +422,49 @@ import api from './api.js';
         if (!grid) return;
 
         try {
-            const res = await api.getCategories();
-            if (res.data && res.data.categories && res.data.categories.length > 0) {
-                const categories = res.data.categories;
+            let categories = categoriesMasterList;
+            if (!categories || categories.length === 0) {
+                const res = await api.getCategories();
+                categories = (res.data && res.data.categories) ? res.data.categories : [];
+            }
+
+            if (categories.length > 0) {
+                const categoryCounts = getCategoryCounts(allProducts, categories);
+
                 grid.innerHTML = categories.map(c => {
                     let imgSrc = c.image || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
                     if (imgSrc.startsWith('/uploads/')) {
                         imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
                     }
-                    const descStr = c.description || 'Explore our exclusive collection';
+                    const count = categoryCounts[c.name] || 0;
+                    const descStr = c.description || (count ? `${count} Product${count === 1 ? '' : 's'}` : 'Explore our collection');
                     return `
-                        <article class="diamond-card category-card" style="cursor: pointer;" onclick="window.location.href='collections.html?category=${encodeURIComponent(c.name)}'">
+                        <article class="diamond-card category-card" style="cursor: pointer;" data-catname="${c.name}">
                             <div class="diamond-card__image-wrapper">
                                 <img src="${imgSrc}" alt="${c.name}" loading="lazy" class="arch-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                             </div>
                             <div class="diamond-card__details">
-                                <h3 class="diamond-card__title">${c.name}</h3>
-                                <div class="diamond-card__meta">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <h3 class="diamond-card__title">${c.name}</h3>
+                                    ${count ? `<span style="font-size:0.75rem; background:rgba(212,175,55,0.15); color:var(--color-gold-dark); padding:2px 8px; border-radius:12px; font-weight:600;">${count} Products</span>` : ''}
+                                </div>
+                                <div class="diamond-card__meta" style="margin-top:4px;">
                                     <span class="diamond-card__specs">${descStr}</span>
                                 </div>
                             </div>
                         </article>
                     `;
                 }).join('');
+
+                grid.querySelectorAll('.category-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const catName = card.dataset.catname;
+                        if (catName) {
+                            window.location.href = `collections.html?category=${encodeURIComponent(catName)}`;
+                        }
+                    });
+                });
 
                 // If more than 3 categories, enable and initialize slider controls
                 if (categories.length > 3 && controls) {
