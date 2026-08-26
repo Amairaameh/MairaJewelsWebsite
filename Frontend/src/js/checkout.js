@@ -626,19 +626,7 @@ import api from './api.js';
             clearCart();
             if (checkoutLayout) checkoutLayout.style.display = 'none';
             if (checkoutSuccess) {
-                const orderNumEl = checkoutSuccess.querySelector('.order-number, p strong, h3');
-                if (orderNumEl) {
-                    orderNumEl.textContent = `Order Reference: ${generatedOrderNumber}`;
-                }
-
-                const successTitle = document.getElementById('checkout-success-title') || checkoutSuccess.querySelector('.checkout-success__title');
-                const successText = document.getElementById('checkout-success-text') || checkoutSuccess.querySelector('.checkout-success__text');
-                if (successTitle) {
-                    successTitle.textContent = 'Order Received — Pending Manual Payment';
-                }
-                if (successText) {
-                    successText.innerHTML = `Your order reference <strong>#${generatedOrderNumber}</strong> has been recorded. Please click the button below to connect with our concierge team on WhatsApp and complete payment so our admin can confirm your order.`;
-                }                const itemLines = items.map((item) => {
+                const itemLines = items.map((item) => {
                     const priceFormatted = formatPrice(item.priceNum * item.quantity);
                     let opts = [];
                     if (item.color) opts.push(`Colour: ${item.color}`);
@@ -671,24 +659,223 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                 const waText = encodeURIComponent(rawWaMessage);
                 const waUrl = `https://api.whatsapp.com/send?phone=27839228383&text=${waText}`;
 
-                let waBtn = document.getElementById('checkout-wa-action-btn');
-                if (!waBtn) {
-                    waBtn = document.createElement('a');
-                    waBtn.id = 'checkout-wa-action-btn';
-                    waBtn.target = '_blank';
-                    waBtn.rel = 'noopener noreferrer';
-                    waBtn.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:#ffffff; font-weight:600; font-size:0.9rem; padding:12px 24px; border-radius:4px; text-decoration:none; margin-top:1.2rem; transition:all 0.2s ease; box-shadow:0 4px 12px rgba(37,211,102,0.3);';
-                    waBtn.innerHTML = '💬 Complete Payment on WhatsApp';
-                    const existingBtn = checkoutSuccess.querySelector('a.btn');
-                    if (existingBtn) {
-                        existingBtn.parentNode.insertBefore(waBtn, existingBtn);
-                        existingBtn.style.marginLeft = '12px';
-                    } else {
-                        checkoutSuccess.appendChild(waBtn);
-                    }
+                const itemsHtml = items.map(item => {
+                    let opts = [];
+                    if (item.color) opts.push(`Colour: ${item.color}`);
+                    if (item.size) opts.push(`Size: ${item.size}`);
+                    const metaStr = opts.length > 0 ? opts.join(' · ') : '18K Gold';
+                    const imgSrc = item.image || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
+                    return `
+                        <div class="receipt-item-card">
+                            <img src="${imgSrc}" alt="${item.name}" class="receipt-item-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                            <div class="receipt-item-info">
+                                <div class="receipt-item-name">${item.name}</div>
+                                <div class="receipt-item-meta">${metaStr} (Qty: ${item.quantity})</div>
+                            </div>
+                            <div class="receipt-item-price">${formatPrice((item.priceNum || parsePriceNum(item.price)) * item.quantity)}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                checkoutSuccess.innerHTML = `
+                    <div class="order-receipt-wrapper">
+                        <div class="receipt-header">
+                            <div class="receipt-seal-icon">✦</div>
+                            <span class="receipt-eyebrow">Maira Jewels Concierge Checkout</span>
+                            <h1 class="receipt-title">Order Received — Pending Manual Payment</h1>
+                            <p class="receipt-subtitle">Your order reference has been recorded. Please connect with our WhatsApp concierge team to complete payment and receive immediate order confirmation & dispatch.</p>
+                        </div>
+
+                        <div class="receipt-meta-grid">
+                            <div class="meta-card">
+                                <span class="meta-card__label">Order Reference</span>
+                                <div class="meta-card__value-row">
+                                    <strong class="meta-card__value">#${generatedOrderNumber}</strong>
+                                    <button class="copy-btn" id="copy-ref-btn" title="Copy Order Number">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-card__label">Payment Method</span>
+                                <span class="meta-card__value">${getSelectedPaymentMethodName()}</span>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-card__label">Total Order Amount</span>
+                                <span class="meta-card__value meta-card__value--gold">${formatPrice(totalAmount)}</span>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-card__label">Order Status</span>
+                                <span class="status-badge status-badge--pending">Pending Verification</span>
+                            </div>
+                        </div>
+
+                        <div class="receipt-tracker">
+                            <div class="tracker-step tracker-step--completed">
+                                <div class="tracker-icon">✓</div>
+                                <div class="tracker-text">
+                                    <strong class="tracker-title">1. Order Recorded</strong>
+                                    <span class="tracker-sub">Reserved in system</span>
+                                </div>
+                            </div>
+                            <div class="tracker-divider tracker-divider--active"></div>
+                            <div class="tracker-step tracker-step--active">
+                                <div class="tracker-icon">2</div>
+                                <div class="tracker-text">
+                                    <strong class="tracker-title">2. Concierge Payment</strong>
+                                    <span class="tracker-sub">Send proof via WhatsApp</span>
+                                </div>
+                            </div>
+                            <div class="tracker-divider"></div>
+                            <div class="tracker-step">
+                                <div class="tracker-icon">3</div>
+                                <div class="tracker-text">
+                                    <strong class="tracker-title">3. Order Dispatched</strong>
+                                    <span class="tracker-sub">3–4 Days Courier Guy</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="concierge-action-card">
+                            <div class="concierge-card__header">
+                                <div class="concierge-avatar">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 class="concierge-card__title">Complete Payment via WhatsApp Concierge</h3>
+                                    <p class="concierge-card__subtitle">Instant support, payment verification & official order confirmation</p>
+                                </div>
+                            </div>
+
+                            <div class="concierge-steps">
+                                <div class="concierge-step-item">
+                                    <span class="step-num">Step 1</span>
+                                    <p>Click <strong>"Complete Payment on WhatsApp"</strong> below. Your order details are pre-filled automatically.</p>
+                                </div>
+                                <div class="concierge-step-item">
+                                    <span class="step-num">Step 2</span>
+                                    <p>Send the message to our concierge team at <strong>+27 83 922 8383</strong> along with your proof of payment.</p>
+                                </div>
+                                <div class="concierge-step-item">
+                                    <span class="step-num">Step 3</span>
+                                    <p>Our team verifies payment and dispatches your order with insured signature packaging!</p>
+                                </div>
+                            </div>
+
+                            <div class="concierge-cta-row">
+                                <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-luxury">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.299.38 2.51 1.036 3.531l-.679 2.479 2.541-.666c.983.536 2.107.828 3.256.828h.001c3.181 0 5.767-2.586 5.768-5.766 0-3.18-2.586-5.766-5.768-5.766zm3.366 8.163c-.145.409-.844.779-1.164.828-.32.05-.724.075-2.072-.48-1.726-.71-2.83-2.474-2.917-2.589-.086-.115-.705-.939-.705-1.791 0-.852.446-1.27.605-1.442.159-.172.347-.215.463-.215.115 0 .231.001.332.006.107.005.252-.04.393.301.145.351.492 1.202.535 1.288.043.086.072.187.014.302-.058.115-.087.187-.174.288-.087.101-.183.226-.261.303-.087.087-.178.182-.077.355.101.173.449.741.964 1.201.663.592 1.222.776 1.395.862.173.086.275.072.376-.043.101-.115.433-.504.549-.677.115-.173.231-.144.39-.086.159.058 1.01.476 1.184.563.173.086.289.13.332.202.043.072.043.418-.102.827z"/></svg>
+                                    <span>Complete Payment on WhatsApp</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="receipt-details-grid">
+                            <div class="receipt-section">
+                                <h3 class="receipt-section__title">Order Summary (${items.length} Item${items.length === 1 ? '' : 's'})</h3>
+                                <div class="receipt-items-list">
+                                    ${itemsHtml}
+                                </div>
+                            </div>
+
+                            <div class="receipt-section">
+                                <h3 class="receipt-section__title">Delivery Details</h3>
+                                <div class="info-block">
+                                    <div class="info-row">
+                                        <span class="info-label">Customer Name</span>
+                                        <span class="info-value">${firstName} ${lastName}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Contact Info</span>
+                                        <span class="info-value">${userEmail} · ${phone}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Shipping Address</span>
+                                        <span class="info-value">${fullStreetAddress}, ${city}, ${zip}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Shipping Method</span>
+                                        <span class="info-value">Courier Guy (3–4 Working Days)</span>
+                                    </div>
+                                </div>
+
+                                <div class="receipt-total-card">
+                                    <div class="total-row">
+                                        <span>Subtotal</span>
+                                        <span>${formatPrice(subtotal)}</span>
+                                    </div>
+                                    <div class="total-row">
+                                        <span>Insured Delivery</span>
+                                        <span style="color:#27ae60; font-weight:600;">COMPLIMENTARY</span>
+                                    </div>
+                                    <div class="total-row total-row--grand">
+                                        <span>Grand Total</span>
+                                        <span style="color:var(--color-gold-dark);">${formatPrice(totalAmount)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bank-details-card">
+                            <details>
+                                <summary class="bank-summary-title">
+                                    <span>🏦 Option 2: Direct Bank Transfer (EFT) Account Details</span>
+                                    <span style="color:var(--color-gold-dark); font-size:1rem;">▼</span>
+                                </summary>
+                                <div class="bank-details-content">
+                                    <p style="font-size:0.85rem; color:var(--color-muted); margin-bottom:12px;">If you prefer Direct Bank Transfer (EFT), make payment using the account details below and send proof of payment to our WhatsApp concierge.</p>
+                                    <div class="bank-grid">
+                                        <div class="bank-field">
+                                            <span class="bank-field__label">Bank Name</span>
+                                            <span class="bank-field__value">Standard Bank / FNB</span>
+                                        </div>
+                                        <div class="bank-field">
+                                            <span class="bank-field__label">Account Holder</span>
+                                            <span class="bank-field__value">Maira Jewels (Pty) Ltd</span>
+                                        </div>
+                                        <div class="bank-field">
+                                            <span class="bank-field__label">Account Number</span>
+                                            <span class="bank-field__value">62849104829</span>
+                                        </div>
+                                        <div class="bank-field">
+                                            <span class="bank-field__label">Branch Code</span>
+                                            <span class="bank-field__value">250655</span>
+                                        </div>
+                                        <div class="bank-field" style="grid-column: 1 / -1; margin-top: 6px; background:#fdfbf7; padding:8px 12px; border-radius:6px; border:1px solid rgba(212,175,55,0.2);">
+                                            <span class="bank-field__label">Payment Reference (Mandatory)</span>
+                                            <strong class="bank-field__value" style="color:var(--color-gold-dark); font-size:1rem;">#MJ-${generatedOrderNumber}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="receipt-actions-bar">
+                            <button id="receipt-print-btn" class="btn btn--outline" style="display:inline-flex; align-items:center; gap:8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                Print / Save Receipt
+                            </button>
+                            <a href="collections.html" class="btn btn--ghost">Continue Shopping</a>
+                        </div>
+                    </div>
+                `;
+
+                const copyBtn = document.getElementById('copy-ref-btn');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(`#${generatedOrderNumber}`);
+                        copyBtn.textContent = 'Copied ✓';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`;
+                        }, 2000);
+                    });
                 }
-                waBtn.href = waUrl;
-                waBtn.style.display = 'inline-flex';
+
+                const printBtn = document.getElementById('receipt-print-btn');
+                if (printBtn) {
+                    printBtn.addEventListener('click', () => window.print());
+                }
 
                 checkoutSuccess.classList.add('visible');
                 checkoutSuccess.style.display = 'block';

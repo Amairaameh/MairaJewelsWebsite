@@ -1127,9 +1127,8 @@ input, select, textarea { font-family: var(--font-sans); }
 
 /* -- Success State -- */
 .checkout-success {
-    text-align: center;
-    padding: 6rem 2rem;
-    max-width: 500px;
+    padding: 1rem 0;
+    max-width: 920px;
     margin: 0 auto;
     display: none;
 }
@@ -1139,23 +1138,507 @@ input, select, textarea { font-family: var(--font-sans); }
     animation: fadeInUp 0.6s var(--ease) forwards;
 }
 
-.checkout-success__icon {
-    font-size: 3.5rem;
+.order-receipt-wrapper {
+    background: #ffffff;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05), 0 2px 12px rgba(212, 175, 55, 0.08);
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-receipt-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #c5a059, #e6ca65, #c5a059);
+}
+
+.receipt-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(200, 169, 126, 0.2);
+}
+
+.receipt-seal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(184, 134, 11, 0.08));
+    color: var(--color-gold-dark);
+    font-size: 1.8rem;
+    margin: 0 auto 1rem auto;
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.2);
+}
+
+.receipt-eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.receipt-title {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    color: var(--color-charcoal);
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+    line-height: 1.25;
+}
+
+.receipt-subtitle {
+    font-size: 0.95rem;
+    color: var(--color-muted);
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Metadata Bar Cards */
+.receipt-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.meta-card {
+    background: #fdfbf7;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-card__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-muted);
+    font-weight: 500;
+}
+
+.meta-card__value {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--color-charcoal);
+}
+
+.meta-card__value--gold {
+    color: var(--color-gold-dark);
+    font-size: 1.1rem;
+}
+
+.meta-card__value-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.copy-btn {
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: var(--color-gold-dark);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+    background: var(--color-gold-dark);
+    color: #fff;
+}
+
+.status-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    width: fit-content;
+}
+
+.status-badge--pending {
+    background: rgba(243, 156, 18, 0.15);
+    color: #d35400;
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+/* Order Tracker Steps */
+.receipt-tracker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #faf8f5;
+    border: 1px solid rgba(200, 169, 126, 0.18);
+    border-radius: 10px;
+    padding: 1.2rem 1.8rem;
+    margin-bottom: 2rem;
+}
+
+.tracker-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.6;
+}
+
+.tracker-step--completed,
+.tracker-step--active {
+    opacity: 1;
+}
+
+.tracker-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0d8cc;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.tracker-step--completed .tracker-icon {
+    background: var(--color-gold-dark);
+    color: #ffffff;
+}
+
+.tracker-step--active .tracker-icon {
+    background: #25D366;
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.2);
+}
+
+.tracker-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.tracker-title {
+    font-size: 0.85rem;
+    color: var(--color-charcoal);
+}
+
+.tracker-sub {
+    font-size: 0.72rem;
+    color: var(--color-muted);
+}
+
+.tracker-divider {
+    flex: 1;
+    height: 2px;
+    background: #e0d8cc;
+    margin: 0 15px;
+}
+
+.tracker-divider--active {
+    background: linear-gradient(90deg, var(--color-gold-dark), #25D366);
+}
+
+/* Concierge Action Card */
+.concierge-action-card {
+    background: linear-gradient(135deg, #111b15 0%, #1a291f 100%);
+    border: 1px solid rgba(37, 211, 102, 0.35);
+    border-radius: 12px;
+    padding: 1.8rem;
+    color: #ffffff;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.concierge-card__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.2rem;
+}
+
+.concierge-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #25D366;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+.concierge-card__title {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    color: #ffffff;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.concierge-card__subtitle {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.concierge-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.checkout-success__title {
-    font-family: var(--font-serif);
-    font-size: 2.5rem;
-    color: var(--color-charcoal);
-    margin-bottom: 1rem;
+.concierge-step-item .step-num {
+    display: inline-block;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(37, 211, 102, 0.2);
+    color: #25D366;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-bottom: 6px;
 }
 
-.checkout-success__text {
+.concierge-step-item p {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+.concierge-cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-whatsapp-luxury {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #25D366;
+    color: #ffffff;
+    font-weight: 600;
     font-size: 1rem;
+    padding: 0.9rem 2.2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.btn-whatsapp-luxury:hover {
+    background: #20ba5a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.5);
+    color: #ffffff;
+}
+
+/* Receipt Details Split Grid */
+.receipt-details-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.receipt-section {
+    background: #faf8f5;
+    border: 1px solid rgba(200, 169, 126, 0.18);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.receipt-section__title {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: var(--color-charcoal);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(200, 169, 126, 0.2);
+}
+
+.receipt-item-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.8rem 0;
+    border-bottom: 1px dashed rgba(200, 169, 126, 0.25);
+}
+
+.receipt-item-card:last-child {
+    border-bottom: none;
+}
+
+.receipt-item-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.receipt-item-info {
+    flex: 1;
+}
+
+.receipt-item-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--color-charcoal);
+    margin-bottom: 2px;
+}
+
+.receipt-item-meta {
+    font-size: 0.76rem;
     color: var(--color-muted);
-    line-height: 1.7;
-    margin-bottom: 2.5rem;
+}
+
+.receipt-item-price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-gold-dark);
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.2rem;
+}
+
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+}
+
+.info-value {
+    font-size: 0.86rem;
+    color: var(--color-charcoal);
+    font-weight: 500;
+}
+
+.receipt-total-card {
+    background: #ffffff;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 6px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+.total-row--grand {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-charcoal);
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Bank Details Collapsible */
+.bank-details-card {
+    background: #ffffff;
+    border: 1px solid rgba(200, 169, 126, 0.25);
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.bank-summary-title {
+    padding: 1.2rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-charcoal);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fdfbf7;
+}
+
+.bank-details-content {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(200, 169, 126, 0.2);
+}
+
+.bank-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.bank-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.bank-field__label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-muted);
+}
+
+.bank-field__value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-charcoal);
+}
+
+/* Receipt Actions Footer */
+.receipt-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(200, 169, 126, 0.2);
 }
 
 /* ============================================= */
