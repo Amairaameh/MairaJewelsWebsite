@@ -85,7 +85,8 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                 const categoryCounts = getCategoryCounts(liveCatalogItems, loadedCategoriesList);
                 const totalAll = liveCatalogItems.length;
 
-                let categoriesToRender = loadedCategoriesList.map(c => typeof c === 'object' ? c.name : c);
+                // Render 100% dynamic categories (master backend list + active products)
+                let categoriesToRender = loadedCategoriesList.map(c => typeof c === 'object' ? c.name : c).filter(Boolean);
 
                 liveCatalogItems.forEach(item => {
                     const resolved = resolveCategory(item.category, loadedCategoriesList);
@@ -94,11 +95,17 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                     }
                 });
 
+                // Only show categories that have items in live inventory or exist in active backend database
+                const activeCategories = categoriesToRender.filter(catName => {
+                    const count = categoryCounts[catName] || 0;
+                    return count > 0 || loadedCategoriesList.some(c => (typeof c === 'object' ? c.name : c).toLowerCase() === catName.toLowerCase());
+                });
+
                 const currentActive = activeCategory.toLowerCase();
                 const isAllActive = currentActive === 'all' || currentActive === 'all jewellery';
 
                 let pillsHtml = `<button class="cat-pill ${isAllActive ? 'cat-pill--active' : ''}" data-category="all">All Jewellery <span class="cat-count-badge">${totalAll}</span></button>`;
-                categoriesToRender.forEach(catName => {
+                activeCategories.forEach(catName => {
                     const count = categoryCounts[catName] || 0;
                     const isActive = isCategoryMatch(activeCategory, catName, loadedCategoriesList);
                     pillsHtml += `<button class="cat-pill ${isActive ? 'cat-pill--active' : ''}" data-category="${catName}">${catName} <span class="cat-count-badge">${count}</span></button>`;
