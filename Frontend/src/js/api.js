@@ -244,6 +244,10 @@ class ApiService {
         return await this.request('/orders/my-orders');
     }
 
+    async getAllOrders() {
+        return await this.request('/orders');
+    }
+
     async getOrderById(id) {
         return await this.request(`/orders/${encodeURIComponent(id)}`);
     }

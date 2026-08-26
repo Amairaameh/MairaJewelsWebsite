@@ -492,7 +492,7 @@ import api from './api.js';
 
             try {
                 const res = await api.getMyOrders();
-                const orders = res.data?.orders || [];
+                const orders = res.orders || res.data?.orders || (Array.isArray(res.data) ? res.data : (res.order ? [res.order] : []));
 
                 if (orders.length === 0) {
                     listEl.innerHTML = `
@@ -510,16 +510,28 @@ import api from './api.js';
                         month: 'short',
                         day: 'numeric'
                     });
-                    const statusClass = order.status === 'Delivered' ? 'color:#27ae60;' : order.status === 'Cancelled' ? 'color:#e53e3e;' : 'color:var(--color-gold-dark);';
-                    const itemsCount = (order.items || []).reduce((acc, i) => acc + (i.quantity || 1), 0);
-                    const totalStr = 'R ' + Number(order.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                    const orderStatusVal = order.status || order.orderStatus || 'Pending';
+                    const statusClass = (orderStatusVal.toLowerCase() === 'delivered') ? 'color:#27ae60;' : (orderStatusVal.toLowerCase() === 'cancelled') ? 'color:#e53e3e;' : 'color:var(--color-gold-dark);';
+                    const itemsArr = order.items || [];
+                    const itemsCount = itemsArr.reduce((acc, i) => acc + (i.quantity || 1), 0);
+                    const totalVal = order.totalAmount || order.total || 0;
+                    const totalStr = 'R ' + Number(totalVal).toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+                    const itemDetailsList = itemsArr.map(item => {
+                        let opts = [];
+                        if (item.color || item.colour) opts.push(`Colour: ${item.color || item.colour}`);
+                        if (item.size || item.sizes) opts.push(`Size: ${item.size || item.sizes}`);
+                        const optText = opts.length > 0 ? ` &bull; ${opts.join(', ')}` : '';
+                        return `<div style="font-size:0.75rem; color:var(--color-charcoal); margin-top:2px;">• ${item.name} (Qty: ${item.quantity || 1})${optText}</div>`;
+                    }).join('');
 
                     return `
                         <div style="border: 1px solid var(--color-border); padding: 1rem 1.25rem; margin-bottom: 0.85rem; background: var(--color-white); border-radius: 2px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                                <strong style="font-family:var(--font-serif); font-size:1.05rem; color:var(--color-charcoal);">${order.orderNumber || 'Order #' + order._id?.slice(-6)}</strong>
-                                <span style="font-size:0.75rem; font-weight:600; text-transform:uppercase; ${statusClass}">${order.status || 'Processing'}</span>
+                                <strong style="font-family:var(--font-serif); font-size:1.05rem; color:var(--color-charcoal);">${order.orderNumber || 'Order #' + (order._id || order.id || '').slice(-6)}</strong>
+                                <span style="font-size:0.75rem; font-weight:600; text-transform:uppercase; ${statusClass}">${orderStatusVal}</span>
                             </div>
+                            ${itemDetailsList ? `<div style="margin: 0.4rem 0 0.6rem; padding: 0.4rem 0; border-top: 1px dashed rgba(0,0,0,0.08); border-bottom: 1px dashed rgba(0,0,0,0.08);">${itemDetailsList}</div>` : ''}
                             <div style="font-size:0.8rem; color:var(--color-muted); display:flex; justify-content:space-between;">
                                 <span>${dateStr} &bull; ${itemsCount} item(s)</span>
                                 <strong style="color:var(--color-charcoal);">${totalStr}</strong>

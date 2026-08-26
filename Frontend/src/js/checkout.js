@@ -501,6 +501,8 @@ import api from './api.js';
                 const priceNum = item.priceNum || parsePrice(item.price);
                 const qty = item.quantity || 1;
                 subtotal += (priceNum * qty);
+                const itemColor = item.color || item.colour || '';
+                const itemSize = item.size || item.sizes || '';
                 return {
                     product: item.id || undefined,
                     name: item.name,
@@ -508,7 +510,11 @@ import api from './api.js';
                     priceNum,
                     quantity: qty,
                     image: item.image,
-                    specs: item.specs || ''
+                    specs: item.specs || '',
+                    color: itemColor,
+                    colour: itemColor,
+                    size: itemSize,
+                    sizes: itemSize
                 };
             });
 
@@ -525,7 +531,8 @@ import api from './api.js';
                     email: userEmail,
                     phone: altPhone ? `${phone} (Alt: ${altPhone})` : phone,
                     primaryPhone: phone,
-                    altPhone: altPhone || ''
+                    altPhone: altPhone || '',
+                    address: fullStreetAddress
                 },
                 shippingAddress: {
                     street: fullStreetAddress,
@@ -533,16 +540,20 @@ import api from './api.js';
                     apartment: apartment || '',
                     building: apartment || '',
                     landmark: landmark || '',
-                    city: city,
+                    city: city || 'Johannesburg',
                     state: '',
-                    zip: zip,
-                    postalCode: zip,
-                    country: 'South Africa'
+                    zip: zip || '0000',
+                    postalCode: zip || '0000',
+                    country: country || 'South Africa'
                 },
                 items,
                 subtotal,
+                total: totalAmount,
+                totalAmount,
                 shippingFee: 0,
-                paymentMethod: backendPaymentMethod
+                paymentMethod: backendPaymentMethod,
+                status: 'pending',
+                orderStatus: 'pending'
             };
 
             let generatedOrderNumber = `MJ-${Date.now().toString().slice(-6)}`;
@@ -550,9 +561,10 @@ import api from './api.js';
 
             try {
                 const res = await api.createOrder(orderPayload);
-                if (res && res.data && res.data.order) {
-                    if (res.data.order.orderNumber) generatedOrderNumber = res.data.order.orderNumber;
-                    if (res.data.order._id) backendOrderId = res.data.order._id;
+                const returnedOrder = res?.order || res?.data?.order || res?.data;
+                if (returnedOrder) {
+                    if (returnedOrder.orderNumber) generatedOrderNumber = returnedOrder.orderNumber;
+                    if (returnedOrder._id || returnedOrder.id) backendOrderId = returnedOrder._id || returnedOrder.id;
                 }
             } catch (err) {
                 console.warn('Order creation API notice:', err.message);
@@ -626,9 +638,13 @@ import api from './api.js';
                 }
                 if (successText) {
                     successText.innerHTML = `Your order reference <strong>#${generatedOrderNumber}</strong> has been recorded. Please click the button below to connect with our concierge team on WhatsApp and complete payment so our admin can confirm your order.`;
-                }                const itemLines = items.map((item, idx) => {
+                }                const itemLines = items.map((item) => {
                     const priceFormatted = formatPrice(item.priceNum * item.quantity);
-                    let line = `• *${item.name}* (Qty: ${item.quantity}) - ${priceFormatted}`;
+                    let opts = [];
+                    if (item.color) opts.push(`Colour: ${item.color}`);
+                    if (item.size) opts.push(`Size: ${item.size}`);
+                    const optStr = opts.length > 0 ? ` (${opts.join(', ')})` : '';
+                    let line = `• *${item.name}*${optStr} (Qty: ${item.quantity}) - ${priceFormatted}`;
                     let imgUrl = item.image || '';
                     if (imgUrl && imgUrl.startsWith('http')) {
                         line += `\n  Photo: ${imgUrl}`;
