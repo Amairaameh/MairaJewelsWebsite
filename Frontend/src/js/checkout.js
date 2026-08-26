@@ -681,6 +681,8 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                     `;
                 }).join('');
 
+                const displayOrderRef = generatedOrderNumber.startsWith('#') ? generatedOrderNumber : `#${generatedOrderNumber}`;
+
                 checkoutSuccess.innerHTML = `
                     <div class="order-receipt-wrapper">
                         <div class="receipt-header">
@@ -706,7 +708,7 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                             <div class="meta-card">
                                 <span class="meta-card__label">Order Reference</span>
                                 <div class="meta-card__value-row">
-                                    <strong class="meta-card__value">#${generatedOrderNumber}</strong>
+                                    <strong class="meta-card__value">${displayOrderRef}</strong>
                                     <button class="copy-btn" id="copy-ref-btn" title="Copy Order Number">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                         Copy
@@ -833,40 +835,6 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                             </div>
                         </div>
 
-                        <div class="bank-details-card">
-                            <details>
-                                <summary class="bank-summary-title">
-                                    <span>🏦 Option 2: Direct Bank Transfer (EFT) Account Details</span>
-                                    <span style="color:var(--color-gold-dark); font-size:1rem;">▼</span>
-                                </summary>
-                                <div class="bank-details-content">
-                                    <p style="font-size:0.85rem; color:var(--color-muted); margin-bottom:12px;">If you prefer Direct Bank Transfer (EFT), make payment using the account details below and send proof of payment to our WhatsApp concierge.</p>
-                                    <div class="bank-grid">
-                                        <div class="bank-field">
-                                            <span class="bank-field__label">Bank Name</span>
-                                            <span class="bank-field__value">Standard Bank / FNB</span>
-                                        </div>
-                                        <div class="bank-field">
-                                            <span class="bank-field__label">Account Holder</span>
-                                            <span class="bank-field__value">Maira Jewels (Pty) Ltd</span>
-                                        </div>
-                                        <div class="bank-field">
-                                            <span class="bank-field__label">Account Number</span>
-                                            <span class="bank-field__value">62849104829</span>
-                                        </div>
-                                        <div class="bank-field">
-                                            <span class="bank-field__label">Branch Code</span>
-                                            <span class="bank-field__value">250655</span>
-                                        </div>
-                                        <div class="bank-field" style="grid-column: 1 / -1; margin-top: 6px; background:#fdfbf7; padding:8px 12px; border-radius:6px; border:1px solid rgba(212,175,55,0.2);">
-                                            <span class="bank-field__label">Payment Reference (Mandatory)</span>
-                                            <strong class="bank-field__value" style="color:var(--color-gold-dark); font-size:1rem;">#MJ-${generatedOrderNumber}</strong>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-
                         <div class="receipt-actions-bar">
                             <span id="auto-redirect-notice" style="display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.3); color:var(--color-gold-dark); padding:6px 14px; border-radius:20px; font-weight:500;">
                                 ⏳ Redirecting to Collections in <strong id="redirect-sec-counter" style="font-weight:700;">8</strong>s...
@@ -883,7 +851,7 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                 const copyBtn = document.getElementById('copy-ref-btn');
                 if (copyBtn) {
                     copyBtn.addEventListener('click', () => {
-                        navigator.clipboard.writeText(`#${generatedOrderNumber}`);
+                        navigator.clipboard.writeText(displayOrderRef);
                         copyBtn.textContent = 'Copied ✓';
                         setTimeout(() => {
                             copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`;
@@ -912,15 +880,6 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                         window.location.href = 'collections.html';
                     }
                 }, 1000);
-
-                // Stop redirect if user interacts with WhatsApp or Print
-                const waLuxuryBtn = checkoutSuccess.querySelector('.btn-whatsapp-luxury');
-                if (waLuxuryBtn) {
-                    waLuxuryBtn.addEventListener('click', () => clearInterval(redirectTimer));
-                }
-                if (printBtn) {
-                    printBtn.addEventListener('click', () => clearInterval(redirectTimer));
-                }
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
