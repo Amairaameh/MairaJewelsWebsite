@@ -837,13 +837,13 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
 
                         <div class="receipt-actions-bar">
                             <span id="auto-redirect-notice" style="display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.3); color:var(--color-gold-dark); padding:6px 14px; border-radius:20px; font-weight:500;">
-                                ⏳ Redirecting to Collections in <strong id="redirect-sec-counter" style="font-weight:700;">8</strong>s...
+                                ⏳ Redirecting to Home Page in <strong id="redirect-sec-counter" style="font-weight:700;">60</strong>s...
                             </span>
                             <button id="receipt-print-btn" class="btn btn--outline" style="display:inline-flex; align-items:center; gap:8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                 Print / Save Receipt
                             </button>
-                            <a href="collections.html" class="btn btn--ghost">Continue Shopping</a>
+                            <a href="index.html" class="btn btn--ghost">Return to Home</a>
                         </div>
                     </div>
                 `;
@@ -867,8 +867,8 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                 checkoutSuccess.classList.add('visible');
                 checkoutSuccess.style.display = 'block';
 
-                // 8-Second Auto Redirect to Collections Page
-                let secondsLeft = 8;
+                // 1-Minute (60 Seconds) Auto Redirect to Home Page (index.html)
+                let secondsLeft = 60;
                 const counterEl = document.getElementById('redirect-sec-counter');
                 const redirectTimer = setInterval(() => {
                     secondsLeft -= 1;
@@ -877,7 +877,7 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                     }
                     if (secondsLeft <= 0) {
                         clearInterval(redirectTimer);
-                        window.location.href = 'collections.html';
+                        window.location.href = 'index.html';
                     }
                 }, 1000);
             }
