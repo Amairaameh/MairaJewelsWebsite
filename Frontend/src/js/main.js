@@ -309,6 +309,8 @@ import api from './api.js';
                                 <h3 class="diamond-card__title">${p.name}</h3>
                                 <div class="diamond-card__meta">
                                     <span class="diamond-card__specs">${specsStr}</span>
+                                    ${(p.color || p.colour) ? `<div class="product-card__meta-line"><span class="product-card__meta-label">Colour:</span> ${p.color || p.colour}</div>` : ''}
+                                    ${(p.sizes || p.availableSizes) ? `<div class="product-card__meta-line"><span class="product-card__meta-label">Sizes:</span> ${p.sizes || p.availableSizes}</div>` : ''}
                                     <span class="diamond-card__price">${priceStr}</span>
                                 </div>
                             </div>

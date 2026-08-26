@@ -74,6 +74,13 @@ import api from './api.js';
                 const lineTotal = itemPriceNum * qty;
                 subtotal += lineTotal;
 
+                const colorSizeMeta = [];
+                if (item.color) colorSizeMeta.push(`Colour: ${item.color}`);
+                if (item.size || item.sizes) colorSizeMeta.push(`Size: ${item.size || item.sizes}`);
+                const metaText = colorSizeMeta.length > 0 
+                    ? `${item.specs || '18K Gold'} • ${colorSizeMeta.join(' • ')}`
+                    : (item.specs || '18K Gold');
+
                 const itemRow = document.createElement('div');
                 itemRow.className = 'cart-item';
                 const imgSrc = (item.image && item.image.trim()) ? item.image : 'https://images.unsplash.com/photo-1605100804765-2cbd8be0c558?auto=format&fit=crop&w=600&q=80';
@@ -83,7 +90,7 @@ import api from './api.js';
                     </div>
                     <div class="cart-item__info">
                         <h3 class="cart-item__info__name">${item.name}</h3>
-                        <p class="cart-item__info__meta">${item.specs || '18K Gold'}</p>
+                        <p class="cart-item__info__meta">${metaText}</p>
                     </div>
                     <div class="cart-item__qty">
                         <button class="qty-btn btn-minus" data-index="${index}">−</button>

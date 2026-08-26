@@ -12,6 +12,8 @@ import api from './api.js';
     let currentProduct = null;
     let currentGalleryImages = [];
     let currentImageIndex = 0;
+    let selectedColor = '';
+    let selectedSize = '';
 
     /* ---------- Cart Storage Utilities ---------- */
     function getCart() {
@@ -101,7 +103,9 @@ import api from './api.js';
                 category: urlCategory ? decodeURIComponent(urlCategory) : 'Fine Jewellery',
                 thumbs: [],
                 description: '',
-                details: ''
+                details: '',
+                color: '',
+                sizes: ''
             };
         }
 
@@ -150,16 +154,91 @@ import api from './api.js';
             : formatPrice(p.priceNum || parsePriceNum(p.price));
         if (productPrice) productPrice.textContent = displayPrice;
 
+        const colorVal = p.color || p.colour || '';
+        const sizesVal = p.sizes || p.availableSizes || '';
+
         if (productTagline) {
             productTagline.textContent = p.description || 'Handcrafted with precision, this piece is designed to be your everyday signature — where modern minimalism meets timeless elegance.';
         }
 
         if (productDetailsText) {
-            if (p.details) {
-                productDetailsText.textContent = p.details;
-            } else if (p.description) {
-                productDetailsText.textContent = p.description;
+            let detailsText = p.details || p.description || 'A masterpiece of modern craftsmanship. Every detail is carefully considered, from the ethically sourced materials to the hand-finished surface.';
+            if (colorVal || sizesVal) {
+                detailsText += `\n\nSpecifications:`;
+                if (colorVal) detailsText += `\n• Colour: ${colorVal}`;
+                if (sizesVal) detailsText += `\n• Available Sizes: ${sizesVal}`;
             }
+            productDetailsText.innerText = detailsText;
+        }
+
+        // Render Colour & Available Sizes option pills
+        const optionsGroup = document.getElementById('product-options-group');
+        const colorWrapper = document.getElementById('product-color-wrapper');
+        const colorPills = document.getElementById('product-color-pills');
+        const selectedColorVal = document.getElementById('selected-color-val');
+
+        const sizesWrapper = document.getElementById('product-sizes-wrapper');
+        const sizesPills = document.getElementById('product-sizes-pills');
+        const selectedSizeVal = document.getElementById('selected-size-val');
+
+        let hasOptions = false;
+
+        if (colorVal && colorWrapper && colorPills) {
+            hasOptions = true;
+            colorWrapper.style.display = 'block';
+            colorPills.innerHTML = '';
+            
+            const colorsArr = colorVal.split(/[,/]/).map(c => c.trim()).filter(Boolean);
+            selectedColor = colorsArr[0] || colorVal;
+            if (selectedColorVal) selectedColorVal.textContent = selectedColor;
+
+            colorsArr.forEach((cText, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `option-pill ${idx === 0 ? 'active' : ''}`;
+                btn.textContent = cText;
+                btn.addEventListener('click', () => {
+                    colorPills.querySelectorAll('.option-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedColor = cText;
+                    if (selectedColorVal) selectedColorVal.textContent = cText;
+                });
+                colorPills.appendChild(btn);
+            });
+        } else if (colorWrapper) {
+            colorWrapper.style.display = 'none';
+            selectedColor = '';
+        }
+
+        if (sizesVal && sizesWrapper && sizesPills) {
+            hasOptions = true;
+            sizesWrapper.style.display = 'block';
+            sizesPills.innerHTML = '';
+
+            const sizesArr = sizesVal.split(/[,/]/).map(s => s.trim()).filter(Boolean);
+            selectedSize = sizesArr[0] || sizesVal;
+            if (selectedSizeVal) selectedSizeVal.textContent = selectedSize;
+
+            sizesArr.forEach((sText, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `option-pill ${idx === 0 ? 'active' : ''}`;
+                btn.textContent = sText;
+                btn.addEventListener('click', () => {
+                    sizesPills.querySelectorAll('.option-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedSize = sText;
+                    if (selectedSizeVal) selectedSizeVal.textContent = sText;
+                });
+                sizesPills.appendChild(btn);
+            });
+        } else if (sizesWrapper) {
+            sizesWrapper.style.display = 'none';
+            selectedSize = '';
+        }
+
+        if (optionsGroup) {
+            optionsGroup.style.display = hasOptions ? 'block' : 'none';
         }
 
         // Specs Chips
@@ -343,7 +422,9 @@ import api from './api.js';
                 images: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),
                 thumbs: (p.images && p.images.length > 0) ? p.images : (p.thumbs || [p.image]),
                 description: p.description || '',
-                details: p.details || ''
+                details: p.details || '',
+                color: p.color || p.colour || '',
+                sizes: p.sizes || p.availableSizes || ''
             };
             renderProductUI(normalized);
         }
@@ -380,6 +461,9 @@ import api from './api.js';
                         const itemImg = item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
                         const badgeHtml = itemIsOut ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>` : '';
 
+                        const itemColor = item.color || item.colour || '';
+                        const itemSizes = item.sizes || item.availableSizes || '';
+
                         card.innerHTML = `
                             <div class="related-card__image" style="position:relative;">
                                 ${badgeHtml}
@@ -388,6 +472,8 @@ import api from './api.js';
                             <div class="related-card__body">
                                 <span class="related-card__category">${item.category || 'Fine Jewellery'}</span>
                                 <h4 class="related-card__name">${item.name}</h4>
+                                ${itemColor ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Colour:</span> ${itemColor}</p>` : ''}
+                                ${itemSizes ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Sizes:</span> ${itemSizes}</p>` : ''}
                                 <div class="related-card__footer">
                                     <span class="related-card__price">${itemPrice}</span>
                                 </div>
@@ -477,6 +563,8 @@ import api from './api.js';
                         image: currentProduct.image,
                         specs: currentProduct.specs || currentProduct.category || '18K Gold',
                         category: currentProduct.category,
+                        color: selectedColor || currentProduct.color || currentProduct.colour || '',
+                        size: selectedSize || currentProduct.sizes || currentProduct.availableSizes || '',
                         quantity: qty
                     });
                 }
@@ -521,6 +609,8 @@ import api from './api.js';
                         image: currentProduct.image,
                         specs: currentProduct.specs || currentProduct.category || '18K Gold',
                         category: currentProduct.category,
+                        color: selectedColor || currentProduct.color || currentProduct.colour || '',
+                        size: selectedSize || currentProduct.sizes || currentProduct.availableSizes || '',
                         quantity: qty
                     });
                 }

@@ -146,7 +146,9 @@ import api from './api.js';
                         stock: typeof p.stock === 'number' ? p.stock : (typeof p.countInStock === 'number' ? p.countInStock : 10),
                         image: primaryImg,
                         thumbs: allThumbs,
-                        description: p.description || ''
+                        description: p.description || '',
+                        color: p.color || p.colour || '',
+                        sizes: p.sizes || p.availableSizes || ''
                     };
                 });
             } else {
@@ -222,7 +224,9 @@ import api from './api.js';
                 const matchName = item.name.toLowerCase().includes(q);
                 const matchSpecs = (item.specs || '').toLowerCase().includes(q);
                 const matchCat = (item.category || '').toLowerCase().includes(q);
-                if (!matchName && !matchSpecs && !matchCat) return false;
+                const matchColor = (item.color || '').toLowerCase().includes(q);
+                const matchSizes = (item.sizes || '').toLowerCase().includes(q);
+                if (!matchName && !matchSpecs && !matchCat && !matchColor && !matchSizes) return false;
             }
 
             return true;
@@ -278,6 +282,8 @@ import api from './api.js';
                 <div class="product-card__body">
                     <h3 class="product-card__name">${item.name}</h3>
                     <p class="product-card__type">${item.specs || item.category || ''}</p>
+                    ${item.color ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Colour:</span> ${item.color}</p>` : ''}
+                    ${item.sizes ? `<p class="product-card__meta-line"><span class="product-card__meta-label">Sizes:</span> ${item.sizes}</p>` : ''}
                     <div class="product-card__footer">
                         <span class="product-card__price">${item.price}</span>
                         ${buttonHtml}
@@ -299,7 +305,9 @@ import api from './api.js';
                     stock: item.stock,
                     image: item.image,
                     thumbs: item.thumbs,
-                    description: item.description
+                    description: item.description,
+                    color: item.color,
+                    sizes: item.sizes
                 };
                 try {
                     localStorage.setItem('maira_selected_product', JSON.stringify(prodData));
