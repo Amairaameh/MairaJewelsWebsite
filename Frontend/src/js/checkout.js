@@ -687,7 +687,19 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                             <div class="receipt-seal-icon">✦</div>
                             <span class="receipt-eyebrow">Maira Jewels Concierge Checkout</span>
                             <h1 class="receipt-title">Order Received — Pending Manual Payment</h1>
-                            <p class="receipt-subtitle">Your order reference has been recorded. Please connect with our WhatsApp concierge team to complete payment and receive immediate order confirmation & dispatch.</p>
+                            <p class="receipt-subtitle">Your order reference has been recorded and your items reserved.</p>
+
+                            <div class="order-notice-box">
+                                <div class="order-notice-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                </div>
+                                <div class="order-notice-content">
+                                    <strong class="order-notice-title">Order Created & Reserved</strong>
+                                    <p class="order-notice-text">
+                                        Your order has been successfully created. Once payment is received and approved by our admin team, your order will be dispatched for delivery and you will be notified via email.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="receipt-meta-grid">
@@ -856,6 +868,9 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
                         </div>
 
                         <div class="receipt-actions-bar">
+                            <span id="auto-redirect-notice" style="display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.3); color:var(--color-gold-dark); padding:6px 14px; border-radius:20px; font-weight:500;">
+                                ⏳ Redirecting to Collections in <strong id="redirect-sec-counter" style="font-weight:700;">8</strong>s...
+                            </span>
                             <button id="receipt-print-btn" class="btn btn--outline" style="display:inline-flex; align-items:center; gap:8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                 Print / Save Receipt
@@ -883,6 +898,29 @@ Hi Maira Jewels! I placed this order and would like to complete manual payment v
 
                 checkoutSuccess.classList.add('visible');
                 checkoutSuccess.style.display = 'block';
+
+                // 8-Second Auto Redirect to Collections Page
+                let secondsLeft = 8;
+                const counterEl = document.getElementById('redirect-sec-counter');
+                const redirectTimer = setInterval(() => {
+                    secondsLeft -= 1;
+                    if (counterEl) {
+                        counterEl.textContent = secondsLeft;
+                    }
+                    if (secondsLeft <= 0) {
+                        clearInterval(redirectTimer);
+                        window.location.href = 'collections.html';
+                    }
+                }, 1000);
+
+                // Stop redirect if user interacts with WhatsApp or Print
+                const waLuxuryBtn = checkoutSuccess.querySelector('.btn-whatsapp-luxury');
+                if (waLuxuryBtn) {
+                    waLuxuryBtn.addEventListener('click', () => clearInterval(redirectTimer));
+                }
+                if (printBtn) {
+                    printBtn.addEventListener('click', () => clearInterval(redirectTimer));
+                }
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
