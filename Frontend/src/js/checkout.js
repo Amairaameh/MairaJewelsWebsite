@@ -550,12 +550,15 @@ import api from './api.js';
                 subtotal,
                 total: totalAmount,
                 totalAmount,
+                totalPrice: totalAmount,
                 shippingFee: 0,
                 paymentMethod: backendPaymentMethod,
-                paymentStatus: 'pending',
+                paymentStatus: 'Pending',
+                payment_status: 'Pending',
                 isPaid: false,
-                status: 'pending',
-                orderStatus: 'pending'
+                paid: false,
+                status: 'Pending',
+                orderStatus: 'Pending'
             };
 
             let generatedOrderNumber = `MJ-${Date.now().toString().slice(-6)}`;
@@ -591,10 +594,12 @@ import api from './api.js';
                     total: totalAmount,
                     totalAmount,
                     paymentMethod: getSelectedPaymentMethodName(),
-                    paymentStatus: 'pending',
+                    paymentStatus: 'Pending',
+                    payment_status: 'Pending',
                     isPaid: false,
-                    status: 'pending',
-                    orderStatus: 'pending',
+                    paid: false,
+                    status: 'Pending',
+                    orderStatus: 'Pending',
                     date: new Date().toISOString(),
                     createdAt: new Date().toISOString()
                 };
