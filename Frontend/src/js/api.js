@@ -2,11 +2,15 @@
    Maira Jewels - Secure Centralized API Client
    ============================================= */
 
-const API_BASE_URL = (typeof window !== 'undefined' && window.__API_BASE_URL__) || 'https://maira-backend-mngd.onrender.com/api/v1';
+const API_BASE_URL = (typeof window !== 'undefined' && window.__API_BASE_URL__) || 'https://api.mairajewels.co.za/api/v1';
 
 class ApiService {
     constructor(baseURL = API_BASE_URL) {
         this.baseURL = baseURL;
+        // Simple in-memory cache for faster repeat requests
+        this.cache = new Map();
+        this.cacheExpiry = new Map();
+        this.cacheDuration = 5 * 60 * 1000; // 5 minutes cache
     }
 
     getToken() {
@@ -106,11 +110,45 @@ class ApiService {
     logout() {
         this.setToken(null);
         this.setUser(null);
+        this.clearCache(); // Clear cache on logout
         window.dispatchEvent(new CustomEvent('maira:auth_logout'));
+    }
+
+    clearCache() {
+        this.cache.clear();
+        this.cacheExpiry.clear();
+    }
+
+    // Preload critical data for faster page loads
+    async preloadCriticalData() {
+        try {
+            // Preload products and categories in background
+            await Promise.allSettled([
+                this.getProducts({ limit: 100 }),
+                this.getCategories()
+            ]);
+        } catch (err) {
+            // Silent fail - data will load on demand
+        }
     }
 
     async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+        
+        // Check cache for GET requests
+        const cacheKey = `${options.method || 'GET'}:${url}`;
+        const useCache = (!options.method || options.method === 'GET');
+        
+        if (useCache && this.cache.has(cacheKey)) {
+            const expiry = this.cacheExpiry.get(cacheKey);
+            if (expiry && Date.now() < expiry) {
+                return this.cache.get(cacheKey);
+            } else {
+                this.cache.delete(cacheKey);
+                this.cacheExpiry.delete(cacheKey);
+            }
+        }
+        
         const headers = {
             'Content-Type': 'application/json',
             ...(options.headers || {})
@@ -149,6 +187,12 @@ class ApiService {
                 error.status = response.status;
                 error.data = data;
                 throw error;
+            }
+
+            // Cache successful GET requests
+            if (useCache) {
+                this.cache.set(cacheKey, data);
+                this.cacheExpiry.set(cacheKey, Date.now() + this.cacheDuration);
             }
 
             return data;

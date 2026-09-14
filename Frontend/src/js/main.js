@@ -6,6 +6,15 @@
 import api from './api.js';
 import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryHelper.js';
 
+// Preload critical data early for faster perceived performance
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        api.preloadCriticalData();
+    });
+} else {
+    api.preloadCriticalData();
+}
+
 (function () {
     'use strict';
 
@@ -230,17 +239,60 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
 
         if (!gridContainer) return;
 
-        // Render skeleton / initial loader
-        gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px 0; color: var(--color-muted);"><p>Loading jewellery collection...</p></div>';
+        // Render skeleton / initial loader with better UX
+        gridContainer.innerHTML = `
+            <div style="grid-column: 1/-1; text-align:center; padding: 40px 0; color: var(--color-muted);">
+                <div class="loading-spinner" style="display:inline-block; width:40px; height:40px; border:3px solid rgba(212,175,55,0.2); border-top:3px solid var(--color-gold); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <p style="margin-top:1rem;">Loading collection...</p>
+            </div>
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+        `;
 
         try {
-            // Fetch both categories and products in parallel from live API
-            const [catRes, prodRes] = await Promise.all([
-                api.getCategories().catch(() => ({ data: { categories: [] } })),
-                api.getProducts({ limit: 100 }).catch(() => ({ data: { products: [] } }))
-            ]);
+            // Add timeout for faster failure fallback
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 8000)
+            );
 
-            const allProducts = (prodRes.data && Array.isArray(prodRes.data.products)) ? prodRes.data.products : [];
+            // Fetch both categories and products in parallel from live API with timeout
+            const [catRes, prodRes] = await Promise.race([
+                Promise.all([
+                    api.getCategories().catch(() => ({ data: { categories: [] } })),
+                    api.getProducts({ limit: 100 }).catch(() => ({ data: { products: [] } }))
+                ]),
+                timeoutPromise
+            ]).catch(() => [{ data: { categories: [] } }, { data: { products: [] } }]);
+
+            console.log('Products Response:', prodRes); // Debug log
+
+            // Handle ALL possible response formats from API
+            let allProducts = [];
+            
+            // Try different response structures
+            if (Array.isArray(prodRes?.data?.products)) {
+                allProducts = prodRes.data.products;
+                console.log('Format: prodRes.data.products');
+            } else if (Array.isArray(prodRes?.data?.data)) {
+                allProducts = prodRes.data.data;
+                console.log('Format: prodRes.data.data');
+            } else if (Array.isArray(prodRes?.data)) {
+                allProducts = prodRes.data;
+                console.log('Format: prodRes.data');
+            } else if (Array.isArray(prodRes?.products)) {
+                allProducts = prodRes.products;
+                console.log('Format: prodRes.products');
+            } else if (Array.isArray(prodRes)) {
+                allProducts = prodRes;
+                console.log('Format: prodRes (array)');
+            }
+
+            console.log(`Loaded ${allProducts.length} products from API`); // Debug log
+            if (allProducts.length > 0) {
+                console.log('First product sample:', allProducts[0]);
+            }
+
             let categoriesMasterList = [];
 
             if (catRes.data && Array.isArray(catRes.data.categories) && catRes.data.categories.length > 0) {
@@ -285,10 +337,10 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                     return;
                 }
 
-                // Show top matching products (e.g., up to 6 products for a balanced grid)
-                const itemsToDisplay = filtered.slice(0, 6);
+                // Show top matching products (e.g., up to 8 products for faster initial render)
+                const itemsToDisplay = filtered.slice(0, 8);
 
-                gridContainer.innerHTML = itemsToDisplay.map(p => {
+                gridContainer.innerHTML = itemsToDisplay.map((p, index) => {
                     let priceStr = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                         ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
                         : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'R 448.00');
@@ -307,11 +359,21 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                         ? `<span class="product-card__badge product-card__badge--out-of-stock">OUT OF STOCK</span>`
                         : '';
 
+                    // First 4 images load instantly (eager), rest load when scrolled (lazy)
+                    const loadingStrategy = index < 4 ? 'eager' : 'lazy';
+                    const fetchPriority = index < 4 ? 'high' : 'auto';
+
                     return `
                         <article class="diamond-card" data-id="${p._id || p.customId || ''}" data-out-of-stock="${isOutOfStock}">
                             <div class="diamond-card__image-wrapper">
                                 ${badgeHtml}
-                                <img src="${imgSrc}" alt="${p.name}" loading="lazy" class="arch-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                                <img src="${imgSrc}" 
+                                     alt="${p.name}" 
+                                     loading="${loadingStrategy}" 
+                                     decoding="async"
+                                     fetchpriority="${fetchPriority}"
+                                     class="arch-img" 
+                                     onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                             </div>
                             <div class="diamond-card__details">
                                 <h3 class="diamond-card__title">${p.name}</h3>
@@ -353,15 +415,15 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
             // Initial render with 'all'
             renderProductsForCategory('all');
 
-            // Also populate "Crafted to Perfection" Section dynamically (15 items per batch)
+            // Also populate "Crafted to Perfection" Section dynamically (12 items initial, then load more)
             const craftedGrid = document.getElementById('crafted-perfection-grid');
-            let craftedVisibleCount = 15;
+            let craftedVisibleCount = 12;
 
             function renderCraftedSection() {
                 if (!craftedGrid) return;
                 if (allProducts.length > 0) {
                     const itemsToDisplay = allProducts.slice(0, craftedVisibleCount);
-                    craftedGrid.innerHTML = itemsToDisplay.map(p => {
+                    craftedGrid.innerHTML = itemsToDisplay.map((p, index) => {
                         let priceStr = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                             ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
                             : (p.priceNum ? `R ${p.priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'R 448.00');
@@ -383,10 +445,19 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                             ? `<button class="btn btn--small btn--primary add-to-cart" disabled style="opacity:0.55; cursor:not-allowed; background:#888;">Out of Stock</button>`
                             : `<button class="btn btn--small btn--primary add-to-cart">Add to Cart</button>`;
 
+                        // First 8 images load instantly, rest lazy load
+                        const loadingStrategy = index < 8 ? 'eager' : 'lazy';
+                        const fetchPriority = index < 8 ? 'high' : 'auto';
+
                         return `
                             <article class="product-card" data-id="${p._id || p.customId}" data-out-of-stock="${isOutOfStock}">
                                 <div class="product-card__image">
-                                    <img src="${imgSrc}" alt="${p.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
+                                    <img src="${imgSrc}" 
+                                         alt="${p.name}" 
+                                         loading="${loadingStrategy}" 
+                                         decoding="async"
+                                         fetchpriority="${fetchPriority}"
+                                         onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
                                     ${badgeHtml}
                                 </div>
                                 <div class="product-card__body">
@@ -421,11 +492,11 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                         const loadMoreBtn = document.getElementById('crafted-load-more-btn');
                         if (loadMoreBtn) {
                             loadMoreBtn.addEventListener('click', () => {
-                                craftedVisibleCount += 15;
+                                craftedVisibleCount += 12;
                                 renderCraftedSection();
                             });
                         }
-                    } else if (allProducts.length > 15) {
+                    } else if (allProducts.length > 12) {
                         loadMoreCrafted.innerHTML = `<p style="font-size:0.85rem; color:var(--color-muted); font-style:italic;">Showing all ${allProducts.length} fine jewellery pieces</p>`;
                     } else {
                         loadMoreCrafted.innerHTML = '';
@@ -447,7 +518,12 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
         }
     }
 
-    loadMenWomenSection();
+    // Use requestIdleCallback or setTimeout to defer loading for better perceived performance
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => loadMenWomenSection(), { timeout: 1000 });
+    } else {
+        setTimeout(loadMenWomenSection, 0);
+    }
 
     /* ---------- Load Dynamic Categories on Homepage Grids (with 3-Item Slider) ---------- */
     async function loadDynamicCategories(allProducts = [], categoriesMasterList = []) {
@@ -470,7 +546,7 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                 grid.innerHTML = categories.map(c => {
                     let imgSrc = c.image || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
                     if (imgSrc.startsWith('/uploads/')) {
-                        imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
+                        imgSrc = 'https://api.mairajewels.co.za' + imgSrc;
                     }
                     const count = categoryCounts[c.name] || 0;
                     const descStr = c.description || (count ? `${count} Product${count === 1 ? '' : 's'}` : 'Explore our collection');
@@ -551,7 +627,12 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
         }
     }
 
-    loadDynamicCategories();
+    // Defer non-critical category loading
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => loadDynamicCategories(), { timeout: 2000 });
+    } else {
+        setTimeout(loadDynamicCategories, 100);
+    }
 
     /* ---------- Newsletter Form (API Integrated) ---------- */
     const newsletterForm = document.getElementById('newsletter-form');

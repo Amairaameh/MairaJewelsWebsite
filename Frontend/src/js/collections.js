@@ -20,7 +20,7 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
     let activePriceRange = 'all';
     let activeSort = 'featured';
     let searchQuery = '';
-    let visibleProductCount = 15;
+    let visibleProductCount = 12;
 
     function getCart() {
         try {
@@ -142,8 +142,35 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
     async function loadProductsFromAPI() {
         try {
             const res = await api.getProducts();
-            if (res.data && Array.isArray(res.data.products)) {
-                liveCatalogItems = res.data.products.map((p, index) => {
+            console.log('Products API Response:', res); // Debug log
+            
+            // Handle ALL possible response formats from API
+            let productsArray = [];
+            
+            if (Array.isArray(res?.data?.products)) {
+                productsArray = res.data.products;
+                console.log('Format: res.data.products');
+            } else if (Array.isArray(res?.data?.data)) {
+                productsArray = res.data.data;
+                console.log('Format: res.data.data');
+            } else if (Array.isArray(res?.data)) {
+                productsArray = res.data;
+                console.log('Format: res.data');
+            } else if (Array.isArray(res?.products)) {
+                productsArray = res.products;
+                console.log('Format: res.products');
+            } else if (Array.isArray(res)) {
+                productsArray = res;
+                console.log('Format: res (array)');
+            }
+
+            console.log(`Found ${productsArray.length} products`); // Debug log
+            if (productsArray.length > 0) {
+                console.log('First product:', productsArray[0]);
+            }
+
+            if (productsArray.length > 0) {
+                liveCatalogItems = productsArray.map((p, index) => {
                     const priceNum = p.priceNum || parsePriceNum(p.price);
                     let priceFormatted = (typeof p.price === 'string' && (p.price.startsWith('$') || p.price.startsWith('R')))
                         ? (p.price.startsWith('$') ? 'R ' + p.price.slice(1).trim() : p.price)
@@ -151,7 +178,7 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
 
                     let imgSrc = p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80';
                     if (imgSrc.startsWith('/uploads/')) {
-                        imgSrc = 'https://maira-backend-mngd.onrender.com' + imgSrc;
+                        imgSrc = 'https://api.mairajewels.co.za' + imgSrc;
                     }
                     const isOutOfStock = (p.inStock === false) ||
                                          (typeof p.stock === 'number' && p.stock <= 0) ||
@@ -180,6 +207,8 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                         specs: p.specs || p.specifications || ''
                     };
                 });
+            } else {
+                console.warn('No products found in API response');
             }
         } catch (err) {
             console.warn('Backend API connection notice, using catalog view fallback:', err.message);
@@ -293,7 +322,7 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
 
         const displayedItems = filtered.slice(0, visibleProductCount);
 
-        displayedItems.forEach(item => {
+        displayedItems.forEach((item, index) => {
             const card = document.createElement('article');
             card.className = 'product-card';
             card.style.cursor = 'pointer';
@@ -308,10 +337,19 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
                 ? `<button class="btn btn--small btn--outline add-to-cart-btn" disabled style="opacity:0.55; cursor:not-allowed; border-color:var(--color-border); color:var(--color-muted);">Out of Stock</button>`
                 : `<button class="btn btn--small btn--outline add-to-cart-btn" data-id="${item.id}" aria-label="Add to Bag">Add to Bag</button>`;
 
+            // Eager load first 6 images for instant display, lazy load rest
+            const loadingStrategy = index < 6 ? 'eager' : 'lazy';
+            const fetchPriority = index < 6 ? 'high' : 'low';
+
             card.innerHTML = `
                 <div class="product-card__image">
                     ${badgeHtml}
-                    <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'">
+                    <img src="${item.image}" 
+                         alt="${item.name}" 
+                         loading="${loadingStrategy}" 
+                         decoding="async"
+                         fetchpriority="${fetchPriority}"
+                         onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80'">
                 </div>
                 <div class="product-card__body">
                     <h3 class="product-card__name">${item.name}</h3>
@@ -392,11 +430,11 @@ import { resolveCategory, isCategoryMatch, getCategoryCounts } from './categoryH
             const loadMoreBtn = document.getElementById('load-more-products-btn');
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', () => {
-                    visibleProductCount += 15;
+                    visibleProductCount += 12;
                     renderCatalog();
                 });
             }
-        } else if (filtered.length > 15) {
+        } else if (filtered.length > 12) {
             loadMoreContainer.innerHTML = `<p style="font-size:0.85rem; color:var(--color-muted); font-style:italic;">You've viewed all ${filtered.length} fine jewellery pieces</p>`;
         } else {
             loadMoreContainer.innerHTML = '';
